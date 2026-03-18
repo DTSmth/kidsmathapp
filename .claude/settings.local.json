@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn test:*)",
+      "Bash(./mvnw test:*)",
+      "Read(//d//**)",
+      "Read(//e//**)",
+      "Read(//c/Users/duckt/.sdkman/**)",
+      "Read(//c/Users/duckt/.m2/wrapper/dists//**)",
+      "Read(//c/Users/duckt/AppData/Roaming//**)",
+      "Bash(ls:*)",
+      "Bash(JAVA_HOME=\"/c/Users/duckt/.jdks/corretto-17.0.16\" PATH=\"$JAVA_HOME/bin:$PATH\" cd \"C:/Users/duckt/workspace/kidsmathapp\")",
+      "Bash(JAVA_HOME=\"/c/Users/duckt/.jdks/corretto-17.0.16\" PATH=\"/c/Users/duckt/.jdks/corretto-17.0.16/bin:$PATH\" ./mvnw test --no-transfer-progress -Dspring.profiles.active=test)",
+      "Bash(JAVA_HOME=\"/c/Users/duckt/.jdks/corretto-17.0.16\" PATH=\"/c/Users/duckt/.jdks/corretto-17.0.16/bin:$PATH\" cd \"C:/Users/duckt/workspace/kidsmathapp\")",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npm test:*)",
+      "Bash(docker compose:*)",
+      "Bash(JAVA_HOME=\"/c/Program Files/JetBrains/IntelliJ IDEA 2025.2.1/jbr\" ./mvnw spring-boot:run --no-transfer-progress)",
+      "Bash(tee /tmp/backend_startup.log)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill:*)",
+      "Bash(tee /tmp/backend2.log)",
+      "Bash(curl -s http://localhost:8080/actuator/health)",
+      "Bash(curl -s -X POST http://localhost:8080/api/v1/auth/register -H \"Content-Type: application/json\" -d '{\"\"\"\"email\"\"\"\":\"\"\"\"test@example.com\"\"\"\",\"\"\"\"password\"\"\"\":\"\"\"\"password123\"\"\"\",\"\"\"\"role\"\"\"\":\"\"\"\"PARENT\"\"\"\"}')",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl:*)"
+    ]
+  }
+}

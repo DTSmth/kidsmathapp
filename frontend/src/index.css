@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+@import "tailwindcss";
+
+/* Custom theme using Tailwind v4 CSS variables */
+@theme {
+  /* Colors */
+  --color-primary: #4ECDC4;
+  --color-primary-light: #7EDDD6;
+  --color-primary-dark: #3BA99F;
+  
+  --color-accent: #FFE66D;
+  --color-accent-light: #FFF0A3;
+  --color-accent-dark: #E6CF5A;
+  
+  --color-coral: #FF6B6B;
+  --color-coral-light: #FF9B9B;
+  --color-coral-dark: #E65555;
+  
+  --color-purple: #A084E8;
+  --color-purple-light: #C4B0F0;
+  --color-purple-dark: #8066CC;
+  
+  --color-success: #95D5B2;
+  --color-success-light: #B5E5CA;
+  --color-success-dark: #7AC49A;
+  
+  --color-background: #FFF9E8;
+  
+  /* Fonts */
+  --font-sans: 'Nunito', 'Comic Sans MS', cursive, sans-serif;
+  
+  /* Animations */
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-up: slide-up 0.5s ease-out;
+  --animate-bounce-in: bounce-in 0.6s ease-out;
+  --animate-shake: shake 0.5s ease-in-out;
+  --animate-mascot-bounce: mascot-bounce 2s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-twinkle: twinkle 2s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce-in {
+  0% { opacity: 0; transform: scale(0.8); }
+  50% { transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes mascot-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: #FFF9E8;
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Animation delay utilities */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-700 { animation-delay: 700ms; }
