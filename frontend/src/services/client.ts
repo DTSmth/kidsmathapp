@@ -1,8 +1,12 @@
 import axios from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 
+// In production (Cloud Run) the entrypoint script writes window.__ENV__.API_URL at startup.
+// Falls back to localhost for local development.
+const apiBaseUrl = (window as any).__ENV__?.API_URL ?? 'http://localhost:8080/api/v1';
+
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api/v1',
+  baseURL: apiBaseUrl,
   headers: { 'Content-Type': 'application/json' },
 });
 

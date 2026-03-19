@@ -79,6 +79,13 @@
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
+        <!-- Cloud SQL connector (used in prod profile with Cloud Run) -->
+        <dependency>
+            <groupId>com.google.cloud.sql</groupId>
+            <artifactId>postgres-socket-factory</artifactId>
+            <version>1.22.0</version>
+        </dependency>
+
         <!-- JWT dependencies -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
