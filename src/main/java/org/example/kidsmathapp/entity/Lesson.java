@@ -35,7 +35,7 @@ public class Lesson extends BaseEntity {
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    @Column(name = "lesson_mode", nullable = false)
+    @Column(name = "lesson_mode", nullable = false, columnDefinition = "varchar(255) default 'STANDARD' check (lesson_mode in ('STANDARD','STORY','VISUAL_BUILDER'))")
     private LessonMode lessonMode = LessonMode.STANDARD;
 
     @ManyToOne(fetch = FetchType.LAZY)
