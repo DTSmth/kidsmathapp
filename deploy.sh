@@ -5,7 +5,6 @@
 #
 # Prerequisites:
 #   - gcloud CLI installed and authenticated: gcloud auth login
-#   - Docker installed and running
 #   - Run once, then re-run to redeploy (all create commands are idempotent)
 #
 # Usage:
@@ -63,55 +62,12 @@ gcloud artifacts repositories describe kidsmathapp \
        --location="$REGION" \
        --project="$PROJECT_ID"
 
-gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
-
 # -----------------------------------------------------------------------------
-# 3. Cloud SQL — PostgreSQL 15, cheapest config
-#    db-f1-micro  ~$7/month (compute, runs 24/7)
-#    10 GB SSD    ~$1.70/month (minimum storage)
-#    No backups   saves ~$0.08/GB/month
-#
-#    💡 To pause the instance when not developing (charges storage only, ~$0.17/mo):
-#       gcloud sql instances patch $DB_INSTANCE --activation-policy=NEVER --project=$PROJECT_ID
-#    To resume:
-#       gcloud sql instances patch $DB_INSTANCE --activation-policy=ALWAYS --project=$PROJECT_ID
-# -----------------------------------------------------------------------------
-echo "── Step 3: Cloud SQL ──"
-if ! gcloud sql instances describe "$DB_INSTANCE" --project="$PROJECT_ID" &>/dev/null; then
-  echo "   Creating Cloud SQL instance (this takes ~5 minutes)…"
-  gcloud sql instances create "$DB_INSTANCE" \
-    --database-version=POSTGRES_15 \
-    --tier=db-f1-micro \
-    --region="$REGION" \
-    --no-backup \
-    --storage-size=10GB \
-    --storage-type=SSD \
-    --project="$PROJECT_ID"
-else
-  echo "   Cloud SQL instance exists — applying cost settings…"
-  gcloud sql instances patch "$DB_INSTANCE" \
-    --no-backup \
-    --project="$PROJECT_ID" --quiet
-fi
-
-gcloud sql databases create "$DB_NAME" \
-  --instance="$DB_INSTANCE" --project="$PROJECT_ID" 2>/dev/null || true
-
-gcloud sql users create "$DB_USER" \
-  --instance="$DB_INSTANCE" \
-  --password="$DB_PASSWORD" \
-  --project="$PROJECT_ID" 2>/dev/null || \
-  gcloud sql users set-password "$DB_USER" \
-    --instance="$DB_INSTANCE" \
-    --password="$DB_PASSWORD" \
-    --project="$PROJECT_ID"
-
-# -----------------------------------------------------------------------------
-# 4. Secrets in Secret Manager
+# 3. Secrets in Secret Manager
 #    First run: generates random values and creates the secrets.
 #    Subsequent runs: reads existing values — never regenerates them.
 # -----------------------------------------------------------------------------
-echo "── Step 4: Secrets ──"
+echo "── Step 3: Secrets ──"
 ensure_secret() {
   local name="$1" generate_cmd="$2"
   if gcloud secrets describe "$name" --project="$PROJECT_ID" &>/dev/null; then
@@ -131,6 +87,58 @@ DB_PASSWORD=$(ensure_secret "kidsmathapp-db-password" \
 JWT_SECRET=$(ensure_secret "kidsmathapp-jwt-secret" \
   "openssl rand -base64 48")
 
+# -----------------------------------------------------------------------------
+# 4. Cloud SQL — PostgreSQL 15, cheapest config
+#    db-f1-micro  ~$7/month (compute, runs 24/7)
+#    10 GB SSD    ~$1.70/month (minimum storage)
+#    No backups   saves ~$0.08/GB/month
+#
+#    💡 To pause the instance when not developing (charges storage only, ~$0.17/mo):
+#       gcloud sql instances patch $DB_INSTANCE --activation-policy=NEVER --project=$PROJECT_ID
+#    To resume:
+#       gcloud sql instances patch $DB_INSTANCE --activation-policy=ALWAYS --project=$PROJECT_ID
+# -----------------------------------------------------------------------------
+echo "── Step 4: Cloud SQL ──"
+if ! gcloud sql instances describe "$DB_INSTANCE" --project="$PROJECT_ID" &>/dev/null; then
+  echo "   Creating Cloud SQL instance (this takes ~5 minutes)…"
+  gcloud sql instances create "$DB_INSTANCE" \
+    --database-version=POSTGRES_15 \
+    --tier=db-f1-micro \
+    --region="$REGION" \
+    --no-backup \
+    --storage-size=10GB \
+    --storage-type=SSD \
+    --project="$PROJECT_ID"
+else
+  echo "   Cloud SQL instance exists — applying cost settings…"
+  gcloud sql instances patch "$DB_INSTANCE" \
+    --no-backup \
+    --project="$PROJECT_ID" --quiet
+fi
+
+# Create database (ignore "already exists" error)
+if ! gcloud sql databases describe "$DB_NAME" --instance="$DB_INSTANCE" --project="$PROJECT_ID" &>/dev/null; then
+  echo "   Creating database: $DB_NAME"
+  gcloud sql databases create "$DB_NAME" --instance="$DB_INSTANCE" --project="$PROJECT_ID"
+else
+  echo "   Database exists: $DB_NAME"
+fi
+
+# Create or update user
+if ! gcloud sql users describe "$DB_USER" --instance="$DB_INSTANCE" --project="$PROJECT_ID" &>/dev/null; then
+  echo "   Creating user: $DB_USER"
+  gcloud sql users create "$DB_USER" \
+    --instance="$DB_INSTANCE" \
+    --password="$DB_PASSWORD" \
+    --project="$PROJECT_ID"
+else
+  echo "   User exists, updating password: $DB_USER"
+  gcloud sql users set-password "$DB_USER" \
+    --instance="$DB_INSTANCE" \
+    --password="$DB_PASSWORD" \
+    --project="$PROJECT_ID"
+fi
+
 # Grant the default Cloud Run service account access to both secrets
 PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
 CR_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
@@ -148,12 +156,14 @@ gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --role="roles/cloudsql.client" --quiet
 
 # -----------------------------------------------------------------------------
-# 5. Build & push backend image
+# 5. Build & push backend image using Cloud Build (no local Docker needed)
 # -----------------------------------------------------------------------------
-echo "── Step 5: Backend image ──"
+echo "── Step 5: Backend image (Cloud Build) ──"
 BACKEND_IMAGE="${AR_REPO}/backend:latest"
-docker build -t "$BACKEND_IMAGE" .
-docker push "$BACKEND_IMAGE"
+gcloud builds submit . \
+  --tag="$BACKEND_IMAGE" \
+  --project="$PROJECT_ID" \
+  --quiet
 
 # -----------------------------------------------------------------------------
 # 6. Deploy backend to Cloud Run
@@ -180,12 +190,14 @@ BACKEND_URL=$(gcloud run services describe "$BACKEND_SERVICE" \
 echo "   Backend URL: $BACKEND_URL"
 
 # -----------------------------------------------------------------------------
-# 7. Build & push frontend image
+# 7. Build & push frontend image using Cloud Build
 # -----------------------------------------------------------------------------
-echo "── Step 7: Frontend image ──"
+echo "── Step 7: Frontend image (Cloud Build) ──"
 FRONTEND_IMAGE="${AR_REPO}/frontend:latest"
-docker build -t "$FRONTEND_IMAGE" ./frontend
-docker push "$FRONTEND_IMAGE"
+gcloud builds submit ./frontend \
+  --tag="$FRONTEND_IMAGE" \
+  --project="$PROJECT_ID" \
+  --quiet
 
 # -----------------------------------------------------------------------------
 # 8. Deploy frontend to Cloud Run
@@ -201,7 +213,7 @@ gcloud run deploy "$FRONTEND_SERVICE" \
   --cpu=1 \
   --min-instances=0 \
   --max-instances=2 \
-  --set-env-vars="API_URL=${BACKEND_URL}/api/v1" \
+  --set-env-vars="API_URL=${BACKEND_URL}" \
   --project="$PROJECT_ID"
 
 FRONTEND_URL=$(gcloud run services describe "$FRONTEND_SERVICE" \

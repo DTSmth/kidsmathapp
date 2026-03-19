@@ -1,0 +1,20 @@
+# Ignore for Cloud Build — keep uploads fast
+.git/
+.gitignore
+.gcloudignore
+
+# Dependencies (npm ci will install fresh)
+node_modules/
+
+# Build output (built in container)
+dist/
+
+# IDE
+.vscode/
+.idea/
+
+# Docs
+*.md
+
+# Test artifacts
+coverage/

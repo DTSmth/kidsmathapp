@@ -1,0 +1,24 @@
+# Ignore for Cloud Build — keep uploads fast
+.git/
+.gitignore
+.gcloudignore
+
+# Build artifacts
+target/
+*.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Frontend (has its own Dockerfile)
+frontend/
+
+# Docs
+*.md
+!README.md
+
+# Local dev
+compose.yaml
+.env*
