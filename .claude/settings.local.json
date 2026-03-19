@@ -42,7 +42,11 @@
       "Bash(JAVA_HOME=\"/c/Program Files/JetBrains/IntelliJ IDEA 2025.2.1/jbr\" ./mvnw compile --no-transfer-progress -q)",
       "Bash(mvn compile:*)",
       "Read(//mnt/c/Users/duckt/workspace/**)",
-      "Bash(./mvnw compile:*)"
+      "Bash(./mvnw compile:*)",
+      "Bash(/dev/null echo:*)",
+      "Bash(npx tsc:*)",
+      "Bash(JAVA_HOME=\"/c/Users/duckt/.jdks/corretto-17.0.16\" ./mvnw compile -q)",
+      "Bash(git commit:*)"
     ]
   }
 }

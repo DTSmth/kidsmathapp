@@ -44,7 +44,7 @@ const BalloonPopGame = ({ question, onCorrect, onWrong }: Props) => {
       answer,
       x: 10 + (i * 22) + Math.random() * 5,
       color: COLORS[i % COLORS.length],
-      duration: 6 + Math.random() * 4,
+      duration: 3 + Math.random() * 0.5,
       popped: false,
       wrong: false,
       exited: false,
@@ -119,7 +119,6 @@ const BalloonPopGame = ({ question, onCorrect, onWrong }: Props) => {
                 height: 72,
                 backgroundColor: balloon.color,
                 animationDuration: balloon.wrong ? undefined : `${balloon.duration}s`,
-                transform: 'translateX(-50%)',
               }}
             >
               {balloon.answer}

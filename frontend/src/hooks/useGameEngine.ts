@@ -63,8 +63,11 @@ export function useGameEngine(options: GameEngineOptions) {
   const answersLog = useRef<AnswerLogEntry[]>([]);
   const maxComboReached = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
   const timedOutRef = useRef(false);
+  // Refs mirror score/totalAnswered so endGame always reads the latest values
+  // regardless of which closure called it (avoids stale-closure 0% bug)
+  const scoreRef = useRef(0);
+  const totalAnsweredRef = useRef(0);
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -132,12 +135,17 @@ export function useGameEngine(options: GameEngineOptions) {
     setMascotMood('excited');
     answersLog.current = [];
     maxComboReached.current = 0;
+    scoreRef.current = 0;
+    totalAnsweredRef.current = 0;
   }
 
   function endGame(completed: boolean) {
     if (timerRef.current) clearInterval(timerRef.current);
     const timeSpent = Math.floor((Date.now() - gameStartTime.current) / 1000);
-    const pctScore = totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0;
+    // Use refs (not state) to get accurate counts regardless of which closure called endGame
+    const finalScore = scoreRef.current;
+    const finalTotal = totalAnsweredRef.current;
+    const pctScore = finalTotal > 0 ? Math.round((finalScore / finalTotal) * 100) : 0;
     const starsEarned = Math.round((pctScore / 100) * baseStarsReward) + Math.min(maxComboReached.current, Math.floor(baseStarsReward / 2));
     const result: GameResult = {
       score: pctScore,
@@ -169,8 +177,8 @@ export function useGameEngine(options: GameEngineOptions) {
       answersLog.current.push({ questionId, answeredAt: now - gameStartTime.current });
     }
 
-    setScore(s => s + 1);
-    setTotalAnswered(t => t + 1);
+    setScore(s => { scoreRef.current = s + 1; return s + 1; });
+    setTotalAnswered(t => { totalAnsweredRef.current = t + 1; return t + 1; });
     setMascotMood('correct');
     setSpeedBonus(isSpeedBonus);
 
@@ -195,7 +203,7 @@ export function useGameEngine(options: GameEngineOptions) {
       answersLog.current.push({ questionId, answeredAt: Date.now() - gameStartTime.current });
     }
 
-    setTotalAnswered(t => t + 1);
+    setTotalAnswered(t => { totalAnsweredRef.current = t + 1; return t + 1; });
     setMascotMood('wrong');
     setCombo(0);
     setSpeedBonus(false);

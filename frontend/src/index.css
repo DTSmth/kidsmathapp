@@ -88,11 +88,8 @@
 }
 
 @keyframes balloon-float {
-  0% { transform: translateY(0) rotate(-2deg); }
-  25% { transform: translateY(-25%) rotate(2deg); }
-  50% { transform: translateY(-50%) rotate(-2deg); }
-  75% { transform: translateY(-75%) rotate(2deg); }
-  100% { transform: translateY(-110vh) rotate(0deg); }
+  from { transform: translateX(-50%) translateY(0) rotate(-2deg); }
+  to   { transform: translateX(-50%) translateY(-115vh) rotate(2deg); }
 }
 
 @keyframes balloon-pop {
