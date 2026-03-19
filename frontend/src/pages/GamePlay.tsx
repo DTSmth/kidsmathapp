@@ -193,6 +193,19 @@ const GamePlay = () => {
     }
   };
 
+  // Show a brief loading state while score is being submitted and navigation is pending
+  if (engine.phase === 'gameover' || engine.phase === 'complete') {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center gap-4 bg-background">
+        <div className="text-6xl animate-bounce">{cfg.emoji}</div>
+        <p className="text-xl font-bold text-gray-700">
+          {engine.phase === 'complete' ? 'Amazing! 🎉' : 'Game over! 😅'}
+        </p>
+        <p className="text-gray-400 text-sm">Saving your score…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
       <GameHeader

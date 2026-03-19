@@ -14,12 +14,29 @@ const PatternParadeGame = ({ question, onCorrect, onWrong }: Props) => {
   const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
   const { playDing, playBoing } = useSoundEffects();
 
-  // Parse pattern from question text: items separated by commas, "?" marks the blank
-  // e.g. "🔴, 🔵, 🔴, 🔵, ?"
-  const patternParts = question.questionText
-    .split(',')
-    .map(s => s.trim());
+  // Parse pattern items from question text.
+  // Supports two formats:
+  //   Comma-separated: "🔴, 🔵, 🔴, 🔵, ?"  or  "What's missing? 1, 2, 3, ?, 5"
+  //   Prose+emoji:     "What comes next? 🔴🔵🔴🔵🔴?"  (split into individual graphemes)
+  const parsePatternParts = (text: string): string[] => {
+    if (text.includes(',')) {
+      const parts = text.split(',').map(s => s.trim());
+      // Strip prose prefix from first item (e.g. "What's missing? 1" → "1")
+      const first = parts[0];
+      const stripped = first.match(/^.*[\s?:]\s*(.+)$/)?.[1];
+      if (stripped) parts[0] = stripped.trim();
+      return parts;
+    }
+    // No commas — strip prose prefix ("What comes next? " / "Complete: ")
+    // then split the remaining emoji/char sequence into individual graphemes
+    const noPrefix = text.replace(/^[\w'\s]+[?:]\s*/, '');
+    if (noPrefix && noPrefix !== text) {
+      return [...noPrefix].filter(c => c.trim().length > 0);
+    }
+    return [text];
+  };
 
+  const patternParts = parsePatternParts(question.questionText);
   const blankIndex = patternParts.findIndex(p => p === '?' || p === '___');
   const displayParts = blankIndex >= 0 ? patternParts : [...patternParts, '?'];
   const actualBlank = blankIndex >= 0 ? blankIndex : displayParts.length - 1;
@@ -52,8 +69,7 @@ const PatternParadeGame = ({ question, onCorrect, onWrong }: Props) => {
     <div className="flex flex-col h-full px-4 py-3 gap-4">
       {/* Header */}
       <div className="bg-white rounded-2xl shadow-md px-5 py-3 text-center shrink-0">
-        <p className="text-sm font-semibold text-gray-500 mb-1">Complete the pattern!</p>
-        <p className="text-base font-bold text-gray-800">{question.questionText.includes('?') ? '' : question.questionText}</p>
+        <p className="text-sm font-semibold text-gray-500">Complete the pattern!</p>
       </div>
 
       {/* Pattern display */}

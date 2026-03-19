@@ -35,7 +35,7 @@ interface Props {
   onWrong?: (questionId: number) => void;
 }
 
-const ShapeSafariGame = ({ question, onCorrect, onWrong }: Props) => {
+const ShapeSafariGame = ({ question, onCorrect }: Props) => {
   const [shapes, setShapes] = useState<SceneShape[]>([]);
   const [found, setFound] = useState(0);
   const { playDing, playBoing } = useSoundEffects();

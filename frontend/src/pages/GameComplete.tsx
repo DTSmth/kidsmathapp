@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { GAME_CONFIG } from '../components/games/gameConfig';
-import type { GameResult, GameScoreResult, GameType } from '../types';
+import type { GameResult } from '../hooks/useGameEngine';
+import type { GameScoreResult, GameType } from '../types';
 import { Star, Trophy, RotateCcw, Home } from 'lucide-react';
 
 interface LocationState {

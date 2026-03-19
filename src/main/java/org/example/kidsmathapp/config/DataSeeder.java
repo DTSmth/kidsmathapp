@@ -58,6 +58,7 @@ public class DataSeeder implements CommandLineRunner {
         }
         // Always run question text fixes (idempotent)
         fixNumberRecognitionQuestions();
+        fixGameQuestions();
     }
 
     @Transactional
@@ -72,6 +73,37 @@ public class DataSeeder implements CommandLineRunner {
         fixed += questionRepository.updateQuestionText("Which is the number 10?", "Tap the number ten!");
         if (fixed > 0) {
             log.info("Fixed {} number recognition question(s)", fixed);
+        }
+    }
+
+    @Transactional
+    void fixGameQuestions() {
+        int fixed = 0;
+        // Fix Shape Safari: replace conceptual questions with find-shape questions
+        fixed += questionRepository.updateQuestionText(
+                "What shape has 3 sides?", "Find the triangle!");
+        fixed += questionRepository.updateQuestionText(
+                "How many corners does a square have?", "Find the diamond!");
+        fixed += questionRepository.updateQuestionText(
+                "Which shape is round?", "Find the circle! Round round round");
+        fixed += questionRepository.updateQuestionText(
+                "How many sides does a triangle have?", "Find the triangle! Three sides");
+
+        // Fix Pattern Parade: strip prose prefix, use comma-separated format
+        fixed += questionRepository.updateQuestionText(
+                "What comes next? 🔴🔵🔴🔵🔴?", "🔴, 🔵, 🔴, 🔵, 🔴, ?");
+        fixed += questionRepository.updateQuestionText(
+                "Complete: ⭐⭐🌙⭐⭐🌙⭐⭐?", "⭐, 🌙, ⭐, 🌙, ⭐, ?");
+        fixed += questionRepository.updateQuestionText(
+                "What's missing? 1, 2, 3, ?, 5", "1, 2, 3, ?, 5");
+        fixed += questionRepository.updateQuestionText(
+                "What comes next? 🔺⭕🔺⭕🔺?", "🔺, ⭕, 🔺, ⭕, 🔺, ?");
+        fixed += questionRepository.updateQuestionText(
+                "Complete: 2, 4, 6, ?", "2, 4, 6, ?");
+        fixed += questionRepository.updateQuestionText(
+                "What comes next? 🍎🍎🍊🍎🍎🍊🍎🍎?", "🍎, 🍊, 🍎, 🍊, 🍎, ?");
+        if (fixed > 0) {
+            log.info("Fixed {} game question(s)", fixed);
         }
     }
 
@@ -497,15 +529,15 @@ public class DataSeeder implements CommandLineRunner {
         shapeSafari = gameRepository.save(shapeSafari);
         log.info("Created game: Shape Safari");
 
-        // Shape Safari questions (8)
-        gameQuestions.add(createGameQuestion("Find the circle! ⭕◻️🔺", "[\"Circle\", \"Square\", \"Triangle\"]", "Circle", Difficulty.EASY, shapeSafari));
-        gameQuestions.add(createGameQuestion("What shape has 3 sides?", "[\"Circle\", \"Square\", \"Triangle\", \"Rectangle\"]", "Triangle", Difficulty.EASY, shapeSafari));
-        gameQuestions.add(createGameQuestion("How many corners does a square have?", "[\"2\", \"3\", \"4\", \"5\"]", "4", Difficulty.EASY, shapeSafari));
-        gameQuestions.add(createGameQuestion("Which shape is round?", "[\"Triangle\", \"Square\", \"Circle\", \"Rectangle\"]", "Circle", Difficulty.EASY, shapeSafari));
-        gameQuestions.add(createGameQuestion("A door is shaped like a...", "[\"Circle\", \"Triangle\", \"Rectangle\", \"Star\"]", "Rectangle", Difficulty.MEDIUM, shapeSafari));
-        gameQuestions.add(createGameQuestion("How many sides does a triangle have?", "[\"2\", \"3\", \"4\", \"5\"]", "3", Difficulty.EASY, shapeSafari));
-        gameQuestions.add(createGameQuestion("Find the square! ⭕◻️🔺", "[\"Circle\", \"Square\", \"Triangle\"]", "Square", Difficulty.EASY, shapeSafari));
-        gameQuestions.add(createGameQuestion("A wheel is shaped like a...", "[\"Square\", \"Triangle\", \"Circle\", \"Rectangle\"]", "Circle", Difficulty.MEDIUM, shapeSafari));
+        // Shape Safari questions (8) — all "find the shape" style for visual game
+        gameQuestions.add(createGameQuestion("Find the circle!", "[\"Circle\", \"Square\", \"Triangle\"]", "Circle", Difficulty.EASY, shapeSafari));
+        gameQuestions.add(createGameQuestion("Find the triangle!", "[\"Circle\", \"Square\", \"Triangle\"]", "Triangle", Difficulty.EASY, shapeSafari));
+        gameQuestions.add(createGameQuestion("Find the diamond!", "[\"Diamond\", \"Circle\", \"Square\"]", "Diamond", Difficulty.EASY, shapeSafari));
+        gameQuestions.add(createGameQuestion("Find the square!", "[\"Circle\", \"Square\", \"Triangle\"]", "Square", Difficulty.EASY, shapeSafari));
+        gameQuestions.add(createGameQuestion("Find the rectangle!", "[\"Triangle\", \"Rectangle\", \"Circle\"]", "Rectangle", Difficulty.MEDIUM, shapeSafari));
+        gameQuestions.add(createGameQuestion("Find the star!", "[\"Star\", \"Circle\", \"Square\"]", "Star", Difficulty.EASY, shapeSafari));
+        gameQuestions.add(createGameQuestion("Find the hexagon!", "[\"Circle\", \"Square\", \"Hexagon\"]", "Hexagon", Difficulty.MEDIUM, shapeSafari));
+        gameQuestions.add(createGameQuestion("Find the oval!", "[\"Square\", \"Oval\", \"Triangle\"]", "Oval", Difficulty.EASY, shapeSafari));
 
         // Game 4: Math Race
         Game mathRace = Game.builder()
@@ -545,13 +577,13 @@ public class DataSeeder implements CommandLineRunner {
         patternParade = gameRepository.save(patternParade);
         log.info("Created game: Pattern Parade");
 
-        // Pattern Parade questions (6)
-        gameQuestions.add(createGameQuestion("What comes next? 🔴🔵🔴🔵🔴?", "[\"🔴\", \"🔵\", \"🟢\"]", "🔵", Difficulty.EASY, patternParade));
-        gameQuestions.add(createGameQuestion("Complete: ⭐⭐🌙⭐⭐🌙⭐⭐?", "[\"⭐\", \"🌙\", \"☀️\"]", "🌙", Difficulty.MEDIUM, patternParade));
-        gameQuestions.add(createGameQuestion("What's missing? 1, 2, 3, ?, 5", "[\"3\", \"4\", \"5\", \"6\"]", "4", Difficulty.EASY, patternParade));
-        gameQuestions.add(createGameQuestion("What comes next? 🔺⭕🔺⭕🔺?", "[\"🔺\", \"⭕\", \"◻️\"]", "⭕", Difficulty.EASY, patternParade));
-        gameQuestions.add(createGameQuestion("Complete: 2, 4, 6, ?", "[\"7\", \"8\", \"9\", \"10\"]", "8", Difficulty.HARD, patternParade));
-        gameQuestions.add(createGameQuestion("What comes next? 🍎🍎🍊🍎🍎🍊🍎🍎?", "[\"🍎\", \"🍊\", \"🍋\"]", "🍊", Difficulty.MEDIUM, patternParade));
+        // Pattern Parade questions (6) — comma-separated items, "?" marks the blank
+        gameQuestions.add(createGameQuestion("🔴, 🔵, 🔴, 🔵, 🔴, ?", "[\"🔴\", \"🔵\", \"🟢\"]", "🔵", Difficulty.EASY, patternParade));
+        gameQuestions.add(createGameQuestion("⭐, 🌙, ⭐, 🌙, ⭐, ?", "[\"⭐\", \"🌙\", \"☀️\"]", "🌙", Difficulty.MEDIUM, patternParade));
+        gameQuestions.add(createGameQuestion("1, 2, 3, ?, 5", "[\"3\", \"4\", \"5\", \"6\"]", "4", Difficulty.EASY, patternParade));
+        gameQuestions.add(createGameQuestion("🔺, ⭕, 🔺, ⭕, 🔺, ?", "[\"🔺\", \"⭕\", \"◻️\"]", "⭕", Difficulty.EASY, patternParade));
+        gameQuestions.add(createGameQuestion("2, 4, 6, ?", "[\"7\", \"8\", \"9\", \"10\"]", "8", Difficulty.HARD, patternParade));
+        gameQuestions.add(createGameQuestion("🍎, 🍊, 🍎, 🍊, 🍎, ?", "[\"🍎\", \"🍊\", \"🍋\"]", "🍊", Difficulty.MEDIUM, patternParade));
 
         questionRepository.saveAll(gameQuestions);
         log.info("Seeded {} game questions across 5 games", gameQuestions.size());
