@@ -161,7 +161,8 @@ const GamePlay = () => {
 
   const handleWrong = (questionId: number) => {
     engine.onWrong(questionId);
-    // Advance question regardless for most games
+    // Don't advance when this was the last life — endGame is pending, stay on current question
+    if (engine.lives <= 1) return;
     const nextIndex = questionIndex + 1;
     setQuestionIndex(nextIndex);
     if (nextIndex >= questions.length) {

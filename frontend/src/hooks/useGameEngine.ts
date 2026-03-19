@@ -68,6 +68,7 @@ export function useGameEngine(options: GameEngineOptions) {
   // regardless of which closure called it (avoids stale-closure 0% bug)
   const scoreRef = useRef(0);
   const totalAnsweredRef = useRef(0);
+  const gameOverRef = useRef(false); // blocks re-entrant endGame / stale onWrong calls
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -137,9 +138,12 @@ export function useGameEngine(options: GameEngineOptions) {
     maxComboReached.current = 0;
     scoreRef.current = 0;
     totalAnsweredRef.current = 0;
+    gameOverRef.current = false;
   }
 
   function endGame(completed: boolean) {
+    if (gameOverRef.current) return;
+    gameOverRef.current = true;
     if (timerRef.current) clearInterval(timerRef.current);
     const timeSpent = Math.floor((Date.now() - gameStartTime.current) / 1000);
     // Use refs (not state) to get accurate counts regardless of which closure called endGame
@@ -167,7 +171,7 @@ export function useGameEngine(options: GameEngineOptions) {
   }
 
   const onCorrect = useCallback((questionId?: number) => {
-    if (phase !== 'playing') return;
+    if (phase !== 'playing' || gameOverRef.current) return;
     const now = Date.now();
     const elapsed = now - lastAnswerTime.current;
     const isSpeedBonus = elapsed < 3000;
@@ -177,8 +181,10 @@ export function useGameEngine(options: GameEngineOptions) {
       answersLog.current.push({ questionId, answeredAt: now - gameStartTime.current });
     }
 
-    setScore(s => { scoreRef.current = s + 1; return s + 1; });
-    setTotalAnswered(t => { totalAnsweredRef.current = t + 1; return t + 1; });
+    scoreRef.current += 1;
+    totalAnsweredRef.current += 1;
+    setScore(s => s + 1);
+    setTotalAnswered(t => t + 1);
     setMascotMood('correct');
     setSpeedBonus(isSpeedBonus);
 
@@ -196,14 +202,15 @@ export function useGameEngine(options: GameEngineOptions) {
   }, [phase]);
 
   const onWrong = useCallback((questionId?: number) => {
-    if (phase !== 'playing') return;
+    if (phase !== 'playing' || gameOverRef.current) return;
     lastAnswerTime.current = Date.now();
 
     if (questionId !== undefined) {
       answersLog.current.push({ questionId, answeredAt: Date.now() - gameStartTime.current });
     }
 
-    setTotalAnswered(t => { totalAnsweredRef.current = t + 1; return t + 1; });
+    totalAnsweredRef.current += 1;
+    setTotalAnswered(t => t + 1);
     setMascotMood('wrong');
     setCombo(0);
     setSpeedBonus(false);
@@ -211,6 +218,7 @@ export function useGameEngine(options: GameEngineOptions) {
     setLives(l => {
       const next = l - 1;
       if (next <= 0) {
+        gameOverRef.current = true; // block any further onWrong/onCorrect immediately
         setTimeout(() => endGame(false), 800);
       }
       return next;
