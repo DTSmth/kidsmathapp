@@ -26,6 +26,11 @@ const BalloonPopGame = ({ question, onCorrect, onWrong }: Props) => {
   const [answered, setAnswered] = useState(false);
   const { playPop, playBoing } = useSoundEffects();
   const answeredRef = useRef(false);
+  // Keep stable refs to callbacks so the all-gone effect always calls the latest version
+  const onWrongRef = useRef(onWrong);
+  onWrongRef.current = onWrong;
+  const questionIdRef = useRef(question.id);
+  questionIdRef.current = question.id;
 
   useEffect(() => {
     // Ensure correct answer is in the balloon set
@@ -44,7 +49,7 @@ const BalloonPopGame = ({ question, onCorrect, onWrong }: Props) => {
       answer,
       x: 10 + (i * 22) + Math.random() * 5,
       color: COLORS[i % COLORS.length],
-      duration: 3 + Math.random() * 0.5,
+      duration: 6 + Math.random() * 0.8,
       popped: false,
       wrong: false,
       exited: false,
@@ -54,21 +59,22 @@ const BalloonPopGame = ({ question, onCorrect, onWrong }: Props) => {
     answeredRef.current = false;
   }, [question.id]);
 
-  // When all balloons exit, move on as wrong
+  // Mark a balloon as exited — pure state update, NO side effects here.
+  // Side effects (calling onWrong) happen in the useEffect below to avoid
+  // StrictMode's double-invocation of functional updaters causing double calls.
   const handleBalloonExit = (balloonId: string) => {
     if (answeredRef.current) return;
-
-    setBalloons(prev => {
-      const updated = prev.map(b => b.id === balloonId ? { ...b, exited: true } : b);
-      const allGone = updated.every(b => b.exited || b.popped);
-      if (allGone) {
-        // All balloons gone — treat as wrong (correct answer escaped)
-        answeredRef.current = true;
-        setTimeout(() => onWrong(question.id), 100);
-      }
-      return updated;
-    });
+    setBalloons(prev => prev.map(b => b.id === balloonId ? { ...b, exited: true } : b));
   };
+
+  // Detect when all balloons are gone and fire onWrong exactly once.
+  useEffect(() => {
+    if (answeredRef.current || balloons.length === 0) return;
+    if (!balloons.every(b => b.exited || b.popped)) return;
+    answeredRef.current = true;
+    const id = setTimeout(() => onWrongRef.current(questionIdRef.current), 100);
+    return () => clearTimeout(id);
+  }, [balloons]);
 
   const handleTap = (balloon: Balloon) => {
     if (answeredRef.current || balloon.popped || balloon.exited) return;

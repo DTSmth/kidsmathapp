@@ -68,7 +68,8 @@ export function useGameEngine(options: GameEngineOptions) {
   // regardless of which closure called it (avoids stale-closure 0% bug)
   const scoreRef = useRef(0);
   const totalAnsweredRef = useRef(0);
-  const gameOverRef = useRef(false); // blocks re-entrant endGame / stale onWrong calls
+  const gameEndingRef = useRef(false);  // set when lives hit 0; blocks further onWrong/onCorrect
+  const endGameCalledRef = useRef(false); // prevents endGame from running more than once
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -138,12 +139,13 @@ export function useGameEngine(options: GameEngineOptions) {
     maxComboReached.current = 0;
     scoreRef.current = 0;
     totalAnsweredRef.current = 0;
-    gameOverRef.current = false;
+    gameEndingRef.current = false;
+    endGameCalledRef.current = false;
   }
 
   function endGame(completed: boolean) {
-    if (gameOverRef.current) return;
-    gameOverRef.current = true;
+    if (endGameCalledRef.current) return;
+    endGameCalledRef.current = true;
     if (timerRef.current) clearInterval(timerRef.current);
     const timeSpent = Math.floor((Date.now() - gameStartTime.current) / 1000);
     // Use refs (not state) to get accurate counts regardless of which closure called endGame
@@ -171,7 +173,7 @@ export function useGameEngine(options: GameEngineOptions) {
   }
 
   const onCorrect = useCallback((questionId?: number) => {
-    if (phase !== 'playing' || gameOverRef.current) return;
+    if (phase !== 'playing' || gameEndingRef.current) return;
     const now = Date.now();
     const elapsed = now - lastAnswerTime.current;
     const isSpeedBonus = elapsed < 3000;
@@ -202,7 +204,7 @@ export function useGameEngine(options: GameEngineOptions) {
   }, [phase]);
 
   const onWrong = useCallback((questionId?: number) => {
-    if (phase !== 'playing' || gameOverRef.current) return;
+    if (phase !== 'playing' || gameEndingRef.current) return;
     lastAnswerTime.current = Date.now();
 
     if (questionId !== undefined) {
@@ -218,7 +220,7 @@ export function useGameEngine(options: GameEngineOptions) {
     setLives(l => {
       const next = l - 1;
       if (next <= 0) {
-        gameOverRef.current = true; // block any further onWrong/onCorrect immediately
+        gameEndingRef.current = true; // block further onWrong/onCorrect immediately
         setTimeout(() => endGame(false), 800);
       }
       return next;
