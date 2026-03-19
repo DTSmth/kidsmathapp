@@ -1,8 +1,9 @@
 import { NavLink } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User } from 'lucide-react';
+import { Home, Gamepad2, BookOpen, Trophy, User } from 'lucide-react';
 
 const navItems = [
   { to: '/dashboard', icon: Home, label: 'Home' },
+  { to: '/play', icon: Gamepad2, label: 'Games' },
   { to: '/topics', icon: BookOpen, label: 'Learn' },
   { to: '/achievements', icon: Trophy, label: 'Trophies' },
   { to: '/parent', icon: User, label: 'Profile' },

@@ -178,6 +178,8 @@ const LessonQuiz = () => {
           onAdvance={handleAdvance}
           questionNumber={currentIndex + 1}
           totalQuestions={lesson.questions.length}
+          lessonMode={lesson.lessonMode}
+          storyContext={lesson.lessonMode === 'STORY' ? lesson.content : undefined}
         />
       </div>
     </QuizLayout>

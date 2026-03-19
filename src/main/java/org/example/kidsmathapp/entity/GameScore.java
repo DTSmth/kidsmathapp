@@ -32,6 +32,10 @@ public class GameScore extends BaseEntity {
     @Column(name = "time_spent")
     private Integer timeSpent;
 
+    // JSON array of {questionId, answeredAt} for ghost race replay
+    @Column(name = "answers_log", columnDefinition = "TEXT")
+    private String answersLog;
+
     @Column(name = "played_at", nullable = false)
     private LocalDateTime playedAt;
 

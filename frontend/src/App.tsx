@@ -12,6 +12,9 @@ import LessonComplete from './pages/LessonComplete';
 import ParentDashboard from './pages/ParentDashboard';
 import Achievements from './pages/Achievements';
 import TopicList from './pages/TopicList';
+import Play from './pages/Play';
+import GamePlay from './pages/GamePlay';
+import GameComplete from './pages/GameComplete';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -114,6 +117,36 @@ function App() {
             <ProtectedRoute>
               <ChildProtectedRoute>
                 <TopicList />
+              </ChildProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/play"
+          element={
+            <ProtectedRoute>
+              <ChildProtectedRoute>
+                <Play />
+              </ChildProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/games/:gameId/play"
+          element={
+            <ProtectedRoute>
+              <ChildProtectedRoute>
+                <GamePlay />
+              </ChildProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/games/:gameId/complete"
+          element={
+            <ProtectedRoute>
+              <ChildProtectedRoute>
+                <GameComplete />
               </ChildProtectedRoute>
             </ProtectedRoute>
           }

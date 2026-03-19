@@ -1,6 +1,6 @@
 interface AnimalMascotProps {
   animal: 'leo' | 'ollie' | 'bella' | 'max';
-  mood?: 'happy' | 'excited' | 'thinking' | 'celebrating';
+  mood?: 'happy' | 'excited' | 'thinking' | 'celebrating' | 'correct' | 'wrong';
   size?: 'sm' | 'md' | 'lg';
   message?: string;
 }
@@ -17,6 +17,8 @@ const moodAnimations = {
   excited: 'animate-pulse',
   thinking: '',
   celebrating: 'animate-bounce',
+  correct: 'animate-bounce',
+  wrong: 'animate-shake',
 };
 
 const sizeStyles = {
@@ -36,6 +38,8 @@ const AnimalMascot = ({
       <div className={`${sizeStyles[size]} ${moodAnimations[mood]}`}>
         {animalEmojis[animal]}
         {mood === 'celebrating' && <span className="ml-2">🎉</span>}
+        {mood === 'correct' && <span className="ml-2">⭐</span>}
+        {mood === 'wrong' && <span className="ml-2">💪</span>}
       </div>
       {message && (
         <div className="bg-white rounded-2xl px-4 py-2 shadow-md border-2 border-primary relative">

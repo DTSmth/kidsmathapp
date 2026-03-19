@@ -3,6 +3,7 @@ package org.example.kidsmathapp.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.example.kidsmathapp.entity.enums.LessonMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,11 @@ public class Lesson extends BaseEntity {
     @Builder.Default
     @Column(name = "stars_reward", nullable = false)
     private Integer starsReward = 10;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "lesson_mode", nullable = false)
+    private LessonMode lessonMode = LessonMode.STANDARD;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "topic_id", nullable = false)

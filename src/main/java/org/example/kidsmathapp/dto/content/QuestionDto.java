@@ -21,4 +21,5 @@ public class QuestionDto {
     private List<String> options;
     private Difficulty difficulty;
     private String imageUrl;
+    private String correctAnswer;
 }

@@ -130,6 +130,7 @@ public class ContentService {
                 .topicId(topic.getId())
                 .topicName(topic.getName())
                 .content(lesson.getContent())
+                .lessonMode(lesson.getLessonMode())
                 .questions(questions)
                 .build();
     }

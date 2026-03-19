@@ -28,4 +28,14 @@ public interface GameScoreRepository extends JpaRepository<GameScore, Long> {
 
     @Query("SELECT SUM(gs.starsEarned) FROM GameScore gs WHERE gs.child.id = :childId")
     Integer getTotalStarsEarnedByChildId(@Param("childId") Long childId);
+
+    // Single query: one best-score row per game for this child (no N+1)
+    @Query("SELECT gs FROM GameScore gs WHERE gs.child.id = :childId AND gs.score = " +
+           "(SELECT MAX(gs2.score) FROM GameScore gs2 WHERE gs2.child.id = :childId AND gs2.game.id = gs.game.id) " +
+           "GROUP BY gs.game.id, gs.id")
+    List<GameScore> findBestScorePerGameForChild(@Param("childId") Long childId);
+
+    // Count plays per game to detect difficulty adaptation eligibility
+    @Query("SELECT gs.game.id, COUNT(gs) FROM GameScore gs WHERE gs.child.id = :childId GROUP BY gs.game.id")
+    List<Object[]> countPlaysByGameForChild(@Param("childId") Long childId);
 }

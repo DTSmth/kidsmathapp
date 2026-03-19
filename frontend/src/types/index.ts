@@ -112,9 +112,12 @@ export interface QuestionDto {
   options: string[];
   difficulty: 'EASY' | 'MEDIUM' | 'HARD';
   imageUrl: string | null;
+  correctAnswer: string;
 }
 
 // Lesson detail
+export type LessonMode = 'STANDARD' | 'STORY' | 'VISUAL_BUILDER';
+
 export interface LessonDetailDto {
   id: number;
   title: string;
@@ -124,6 +127,7 @@ export interface LessonDetailDto {
   topicId: number;
   topicName: string;
   content: string;
+  lessonMode: LessonMode;
   questions: QuestionDto[];
 }
 
@@ -181,6 +185,55 @@ export interface TopicProgressDto {
   lessonsCompleted: number;
   totalLessons: number;
   percentComplete: number;
+}
+
+// Game types
+export type GameType = 'NUMBER_POP' | 'COUNTING_CRITTERS' | 'SHAPE_SAFARI' | 'MATH_RACE' | 'PATTERN_PARADE';
+
+export interface GameDto {
+  id: number;
+  name: string;
+  description: string;
+  gameType: GameType;
+  iconName: string;
+  baseStarsReward: number;
+  timeLimit: number;
+  personalBestScore: number | null;
+  personalBestStars: number | null;
+}
+
+export interface GameDetailDto {
+  id: number;
+  name: string;
+  description: string;
+  gameType: GameType;
+  baseStarsReward: number;
+  timeLimit: number;
+  questions: QuestionDto[];
+}
+
+export interface GameScoreRequest {
+  childId: number;
+  score: number;
+  timeSpent: number;
+  comboBonus: number;
+  answersLog?: string;
+}
+
+export interface GameScoreResult {
+  score: number;
+  starsEarned: number;
+  personalBestScore: number;
+  isNewPersonalBest: boolean;
+  streakUpdated: boolean;
+  newAchievements: AchievementDto[];
+  gamificationApplied: boolean;
+}
+
+export interface PendingGameScore {
+  gameId: number;
+  request: GameScoreRequest;
+  timestamp: number;
 }
 
 // Dashboard DTO

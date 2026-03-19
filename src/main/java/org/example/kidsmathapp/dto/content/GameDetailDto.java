@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.kidsmathapp.entity.enums.LessonMode;
+import org.example.kidsmathapp.entity.enums.GameType;
 
 import java.util.List;
 
@@ -12,16 +12,12 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LessonDetailDto {
-
+public class GameDetailDto {
     private Long id;
-    private String title;
+    private String name;
     private String description;
-    private Integer orderIndex;
-    private Integer starsReward;
-    private Long topicId;
-    private String topicName;
-    private String content;
-    private LessonMode lessonMode;
+    private GameType gameType;
+    private Integer baseStarsReward;
+    private Integer timeLimit;
     private List<QuestionDto> questions;
 }

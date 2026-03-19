@@ -32,6 +32,13 @@ export default {
         'slide-in-right': 'slideInRight 200ms ease-out',
         'star-fly': 'starFly 600ms ease-out forwards',
         'confetti-fall': 'confettiFall 2.5s ease-in forwards',
+        'balloon-float': 'balloonFloat var(--balloon-duration, 6s) linear forwards',
+        'balloon-pop': 'balloonPop 150ms ease-out forwards',
+        'countdown-digit': 'countdownDigit 0.6s ease-out forwards',
+        'combo-burst': 'comboBurst 0.4s ease-out forwards',
+        'rocket-boost': 'rocketBoost 0.3s ease-out',
+        'slide-down-in': 'slideDownIn 0.3s ease-out',
+        'pulse-slow': 'pulseSlow 2s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -79,6 +86,42 @@ export default {
         confettiFall: {
           '0%': { opacity: '1', transform: 'translateY(-20px)' },
           '100%': { opacity: '0', transform: 'translateY(100vh)' },
+        },
+        balloonFloat: {
+          '0%': { transform: 'translateY(0) rotate(-2deg)' },
+          '25%': { transform: 'translateY(-25%) rotate(2deg)' },
+          '50%': { transform: 'translateY(-50%) rotate(-2deg)' },
+          '75%': { transform: 'translateY(-75%) rotate(2deg)' },
+          '100%': { transform: 'translateY(-110vh) rotate(0deg)' },
+        },
+        balloonPop: {
+          '0%': { transform: 'scale(1)', opacity: '1' },
+          '50%': { transform: 'scale(1.3)', opacity: '0.8' },
+          '100%': { transform: 'scale(0)', opacity: '0' },
+        },
+        countdownDigit: {
+          '0%': { transform: 'scale(1.5)', opacity: '0' },
+          '20%': { transform: 'scale(1)', opacity: '1' },
+          '80%': { transform: 'scale(1)', opacity: '1' },
+          '100%': { transform: 'scale(0.5)', opacity: '0' },
+        },
+        comboBurst: {
+          '0%': { transform: 'translateY(-20px) scale(0.8)', opacity: '0' },
+          '50%': { transform: 'translateY(0) scale(1.1)', opacity: '1' },
+          '100%': { transform: 'translateY(0) scale(1)', opacity: '1' },
+        },
+        rocketBoost: {
+          '0%': { transform: 'translateX(0)' },
+          '30%': { transform: 'translateX(-6px)' },
+          '100%': { transform: 'translateX(0)' },
+        },
+        slideDownIn: {
+          '0%': { transform: 'translateY(-10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        pulseSlow: {
+          '0%, 100%': { transform: 'scale(1)', opacity: '0.8' },
+          '50%': { transform: 'scale(1.08)', opacity: '1' },
         },
       },
     },

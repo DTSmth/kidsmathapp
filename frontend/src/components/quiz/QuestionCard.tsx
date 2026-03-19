@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import NumberPad from './NumberPad';
 import Button from '../common/Button';
-import type { QuestionDto, AnswerResultDto } from '../../types';
+import StoryModeQuestion from './StoryModeQuestion';
+import VisualBuilderQuestion from './VisualBuilderQuestion';
+import type { QuestionDto, AnswerResultDto, LessonMode } from '../../types';
 import { Volume2, Headphones } from 'lucide-react';
 
 interface QuestionCardProps {
@@ -10,6 +12,8 @@ interface QuestionCardProps {
   onAdvance: () => void;
   questionNumber: number;
   totalQuestions: number;
+  lessonMode?: LessonMode;
+  storyContext?: string;
 }
 
 type FeedbackState = null | { result: AnswerResultDto };
@@ -266,10 +270,34 @@ const StandardQuestion = ({
 
 // ── Router: pick which card to render ────────────────────────────────────────
 const QuestionCard = (props: QuestionCardProps) => {
-  const isAudioQuestion = extractTapNumber(props.question.questionText) !== null;
-  return isAudioQuestion
+  const { lessonMode, storyContext, question } = props;
+  const isAudioQuestion = extractTapNumber(question.questionText) !== null;
+
+  if (lessonMode === 'VISUAL_BUILDER') {
+    return (
+      <div className="bg-white rounded-3xl shadow-lg border-4 border-gray-200 p-6">
+        <VisualBuilderQuestion
+          question={question}
+          onAnswer={answer => props.onAnswer(question.id, answer).then(() => props.onAdvance())}
+        />
+      </div>
+    );
+  }
+
+  const content = isAudioQuestion
     ? <AudioNumberQuestion {...props} />
     : <StandardQuestion {...props} />;
+
+  if (lessonMode === 'STORY' && storyContext) {
+    return (
+      <div>
+        <StoryModeQuestion storyContext={storyContext} />
+        {content}
+      </div>
+    );
+  }
+
+  return content;
 };
 
 export default QuestionCard;
