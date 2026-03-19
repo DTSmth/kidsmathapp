@@ -27,7 +27,7 @@ const LessonList = () => {
     <Layout>
       <div className="space-y-5">
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/topics')}
           className="flex items-center gap-1.5 text-gray-500 hover:text-gray-700 transition-colors text-sm font-medium"
         >
           <ArrowLeft className="w-4 h-4" />

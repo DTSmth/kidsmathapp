@@ -17,22 +17,22 @@ const ToastQueue = ({ achievements }: ToastQueueProps) => {
   const processing = useRef(false);
 
   const processNext = useCallback(() => {
-    if (queue.current.length === 0 || visible.length >= 2) {
+    if (queue.current.length === 0) {
       processing.current = false;
       return;
     }
-    const next = queue.current.shift()!;
-    const item: ToastItem = {
-      id: `${next.id}-${Date.now()}`,
-      achievement: next,
-    };
-    setVisible(prev => [...prev, item]);
+    setVisible(prev => {
+      if (prev.length >= 2) return prev;
+      const next = queue.current.shift();
+      if (!next) return prev;
+      return [...prev, { id: `${next.id}-${Date.now()}`, achievement: next }];
+    });
     setTimeout(processNext, 1500);
-  }, [visible.length]);
+  }, []); // stable — visible.length read inside setState callback
 
   useEffect(() => {
     if (achievements.length > 0) {
-      queue.current.push(...achievements);
+      queue.current = [...achievements];
       if (!processing.current) {
         processing.current = true;
         processNext();

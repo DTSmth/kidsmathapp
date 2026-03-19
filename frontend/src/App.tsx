@@ -10,6 +10,8 @@ import LessonList from './pages/LessonList';
 import LessonQuiz from './pages/LessonQuiz';
 import LessonComplete from './pages/LessonComplete';
 import ParentDashboard from './pages/ParentDashboard';
+import Achievements from './pages/Achievements';
+import TopicList from './pages/TopicList';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -107,6 +109,26 @@ function App() {
           }
         />
         <Route
+          path="/topics"
+          element={
+            <ProtectedRoute>
+              <ChildProtectedRoute>
+                <TopicList />
+              </ChildProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/achievements"
+          element={
+            <ProtectedRoute>
+              <ChildProtectedRoute>
+                <Achievements />
+              </ChildProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/parent"
           element={
             <ProtectedRoute>
@@ -114,7 +136,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );

@@ -23,6 +23,7 @@ const LessonComplete = () => {
   const [showToasts, setShowToasts] = useState(false);
 
   const result = location.state?.result as LessonSubmissionResult | undefined;
+  const topicId = location.state?.topicId as number | undefined;
 
   useEffect(() => {
     if (result?.passed && result.newAchievements.length > 0) {
@@ -81,7 +82,7 @@ const LessonComplete = () => {
       {/* Actions */}
       <div className="flex flex-col gap-3 w-full max-w-xs">
         {result.passed ? (
-          <Button variant="primary" fullWidth size="lg" onClick={() => navigate(-2)}>
+          <Button variant="primary" fullWidth size="lg" onClick={() => navigate(topicId ? `/topics/${topicId}/lessons` : '/dashboard')}>
             Continue
             <ArrowRight className="w-5 h-5" />
           </Button>
@@ -97,7 +98,7 @@ const LessonComplete = () => {
               Try again
             </Button>
             <button
-              onClick={() => navigate(-2)}
+              onClick={() => navigate(topicId ? `/topics/${topicId}/lessons` : '/dashboard')}
               className="flex items-center justify-center gap-1.5 text-gray-500 hover:text-gray-700 font-medium py-2 transition-colors text-sm"
             >
               <ArrowLeft className="w-4 h-4" />

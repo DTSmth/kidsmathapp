@@ -65,7 +65,7 @@ public class ContentService {
                     ? (int) Math.round((completedLessons * 100.0) / totalLessons)
                     : 0;
 
-            // First topic is always unlocked, others require previous topic to have at least some progress
+            // First topic is always unlocked, others unlock after completing any 1 lesson in the previous topic
             boolean isUnlocked = (i == 0) || previousTopicCompleted;
 
             result.add(TopicWithProgressDto.builder()
@@ -79,8 +79,8 @@ public class ContentService {
                     .isUnlocked(isUnlocked)
                     .build());
 
-            // For next topic, check if current topic has at least 50% completion
-            previousTopicCompleted = progressPercent >= 50;
+            // Unlock next topic after completing at least 1 lesson in the current topic
+            previousTopicCompleted = completedLessons >= 1;
         }
 
         return result;

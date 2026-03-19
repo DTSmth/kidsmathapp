@@ -56,6 +56,23 @@ public class DataSeeder implements CommandLineRunner {
                 log.info("Game seeding completed!");
             }
         }
+        // Always run question text fixes (idempotent)
+        fixNumberRecognitionQuestions();
+    }
+
+    @Transactional
+    void fixNumberRecognitionQuestions() {
+        int fixed = 0;
+        // Replace "Which number is this? N" with "Tap the number N!" — answer was visible in question text
+        fixed += questionRepository.updateQuestionText("Which number is this? 3", "Tap the number three!");
+        fixed += questionRepository.updateQuestionText("Tap the number five", "Tap the number five!");
+        fixed += questionRepository.updateQuestionText("Which is the number 2?", "Tap the number two!");
+        fixed += questionRepository.updateQuestionText("Which number is this? 8", "Tap the number eight!");
+        fixed += questionRepository.updateQuestionText("Tap the number seven", "Tap the number seven!");
+        fixed += questionRepository.updateQuestionText("Which is the number 10?", "Tap the number ten!");
+        if (fixed > 0) {
+            log.info("Fixed {} number recognition question(s)", fixed);
+        }
     }
 
     private List<Topic> seedTopicsAndLessons() {
@@ -229,16 +246,17 @@ public class DataSeeder implements CommandLineRunner {
         questions.add(createCountingQuestion("Count: 🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟", "20", Difficulty.HARD, counting11to20));
 
         // Number Recognition 1-5 Questions (4 questions)
-        questions.add(createMultipleChoiceQuestion("Which number is this? 3", "[\"1\", \"2\", \"3\", \"4\"]", "3", Difficulty.EASY, numberRecognition1to5));
-        questions.add(createMultipleChoiceQuestion("Tap the number five", "[\"2\", \"5\", \"7\", \"9\"]", "5", Difficulty.EASY, numberRecognition1to5));
+        // Format: "Tap the number X!" — TTS reads this aloud, child finds the numeral in the options
+        questions.add(createMultipleChoiceQuestion("Tap the number three!", "[\"1\", \"2\", \"3\", \"4\"]", "3", Difficulty.EASY, numberRecognition1to5));
+        questions.add(createMultipleChoiceQuestion("Tap the number five!", "[\"2\", \"5\", \"7\", \"9\"]", "5", Difficulty.EASY, numberRecognition1to5));
         questions.add(createMultipleChoiceQuestion("What number shows 🍎🍎🍎🍎?", "[\"2\", \"3\", \"4\", \"5\"]", "4", Difficulty.EASY, numberRecognition1to5));
-        questions.add(createMultipleChoiceQuestion("Which is the number 2?", "[\"1\", \"2\", \"6\", \"8\"]", "2", Difficulty.EASY, numberRecognition1to5));
+        questions.add(createMultipleChoiceQuestion("Tap the number two!", "[\"1\", \"2\", \"6\", \"8\"]", "2", Difficulty.EASY, numberRecognition1to5));
 
         // Number Recognition 6-10 Questions (4 questions)
-        questions.add(createMultipleChoiceQuestion("Which number is this? 8", "[\"6\", \"7\", \"8\", \"9\"]", "8", Difficulty.MEDIUM, numberRecognition6to10));
-        questions.add(createMultipleChoiceQuestion("Tap the number seven", "[\"5\", \"6\", \"7\", \"10\"]", "7", Difficulty.MEDIUM, numberRecognition6to10));
+        questions.add(createMultipleChoiceQuestion("Tap the number eight!", "[\"6\", \"7\", \"8\", \"9\"]", "8", Difficulty.MEDIUM, numberRecognition6to10));
+        questions.add(createMultipleChoiceQuestion("Tap the number seven!", "[\"5\", \"6\", \"7\", \"10\"]", "7", Difficulty.MEDIUM, numberRecognition6to10));
         questions.add(createMultipleChoiceQuestion("What number shows 🌟🌟🌟🌟🌟🌟🌟🌟🌟?", "[\"7\", \"8\", \"9\", \"10\"]", "9", Difficulty.MEDIUM, numberRecognition6to10));
-        questions.add(createMultipleChoiceQuestion("Which is the number 10?", "[\"6\", \"8\", \"9\", \"10\"]", "10", Difficulty.MEDIUM, numberRecognition6to10));
+        questions.add(createMultipleChoiceQuestion("Tap the number ten!", "[\"6\", \"8\", \"9\", \"10\"]", "10", Difficulty.MEDIUM, numberRecognition6to10));
 
         // Number Match Game Questions (3 questions)
         questions.add(createMultipleChoiceQuestion("Match the number to the picture: 🎈🎈🎈", "[\"2\", \"3\", \"4\", \"5\"]", "3", Difficulty.EASY, numberMatchGame));

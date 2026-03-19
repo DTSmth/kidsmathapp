@@ -84,7 +84,7 @@ const LessonQuiz = () => {
       // Update ChildContext with fresh stats
       updateChildStats(result.totalStars, result.currentStreak);
       // Navigate to completion screen with result
-      navigate(`/lessons/${lesson.id}/complete`, { state: { result, lessonTitle: lesson.title } });
+      navigate(`/lessons/${lesson.id}/complete`, { state: { result, lessonTitle: lesson.title, topicId: lesson.topicId } });
     } catch {
       setPhase('error');
       setErrorMsg("Couldn't submit your answers. Please try again.");
@@ -172,6 +172,7 @@ const LessonQuiz = () => {
     >
       <div className="animate-fade-in">
         <QuestionCard
+          key={currentQuestion.id}
           question={currentQuestion}
           onAnswer={handleAnswer}
           onAdvance={handleAdvance}

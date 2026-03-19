@@ -3,9 +3,9 @@ import { Home, BookOpen, Trophy, User } from 'lucide-react';
 
 const navItems = [
   { to: '/dashboard', icon: Home, label: 'Home' },
-  { to: '/learn', icon: BookOpen, label: 'Learn' },
+  { to: '/topics', icon: BookOpen, label: 'Learn' },
   { to: '/achievements', icon: Trophy, label: 'Trophies' },
-  { to: '/profile', icon: User, label: 'Profile' },
+  { to: '/parent', icon: User, label: 'Profile' },
 ];
 
 const Navigation = () => {
