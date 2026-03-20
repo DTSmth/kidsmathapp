@@ -176,6 +176,7 @@ export interface LessonSubmissionResult {
   newAchievements: AchievementDto[];
   streakUpdated: boolean;
   currentStreak: number;
+  newItem?: InventoryItemDto;
 }
 
 // Topic progress for dashboard

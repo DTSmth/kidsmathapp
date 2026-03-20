@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.kidsmathapp.dto.leaderboard.*;
 import org.example.kidsmathapp.entity.Child;
 import org.example.kidsmathapp.entity.GameScore;
+import org.example.kidsmathapp.entity.enums.GameMode;
 import org.example.kidsmathapp.exception.ApiException;
 import org.example.kidsmathapp.repository.ChildRepository;
 import org.example.kidsmathapp.repository.GameScoreRepository;
@@ -76,8 +77,9 @@ public class LeaderboardService {
                 .orElseThrow(() -> ApiException.notFound("Child not found"));
         Long parentId = child.getParent().getId();
 
+        GameMode gameModeEnum = GameMode.valueOf(gameMode.toUpperCase());
         List<GameScore> scores = gameScoreRepository.findFamilyLeaderboard(
-                gameId, gameMode, parentId, PageRequest.of(0, 10));
+                gameId, gameModeEnum, parentId, PageRequest.of(0, 10));
 
         AtomicInteger rank = new AtomicInteger(1);
         List<LeaderboardEntryDto> entries = scores.stream().map(gs ->

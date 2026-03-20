@@ -1,6 +1,7 @@
 package org.example.kidsmathapp.repository;
 
 import org.example.kidsmathapp.entity.GameScore;
+import org.example.kidsmathapp.entity.enums.GameMode;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -40,5 +41,5 @@ public interface GameScoreRepository extends JpaRepository<GameScore, Long> {
     List<Object[]> countPlaysByGameForChild(@Param("childId") Long childId);
 
     @Query("SELECT gs FROM GameScore gs JOIN FETCH gs.child WHERE gs.game.id = :gameId AND gs.gameMode = :gameMode AND gs.child.parent.id = :parentId ORDER BY gs.score DESC")
-    List<GameScore> findFamilyLeaderboard(@Param("gameId") Long gameId, @Param("gameMode") String gameMode, @Param("parentId") Long parentId, org.springframework.data.domain.Pageable pageable);
+    List<GameScore> findFamilyLeaderboard(@Param("gameId") Long gameId, @Param("gameMode") GameMode gameMode, @Param("parentId") Long parentId, org.springframework.data.domain.Pageable pageable);
 }

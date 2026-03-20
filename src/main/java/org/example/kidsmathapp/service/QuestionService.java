@@ -90,7 +90,8 @@ public class QuestionService {
                     .totalStars(completionResult.getTotalStars())
                     .newAchievements(completionResult.getNewAchievements())
                     .streakUpdated(completionResult.isStreakUpdated())
-                    .currentStreak(completionResult.getCurrentStreak());
+                    .currentStreak(completionResult.getCurrentStreak())
+                    .newItem(completionResult.getNewItem());
         } else {
             resultBuilder
                     .starsEarned(0)

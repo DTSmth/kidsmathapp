@@ -1,5 +1,6 @@
 package org.example.kidsmathapp.dto.progress;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +17,7 @@ public class StreakCalendarDto {
         private boolean practiced;
         private int practiceCount;
         private boolean dailyBonusClaimed;
+        @JsonProperty("isToday")
         private boolean isToday;
     }
 }

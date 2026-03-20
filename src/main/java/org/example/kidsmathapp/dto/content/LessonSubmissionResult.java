@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.kidsmathapp.dto.inventory.InventoryItemDto;
 import org.example.kidsmathapp.dto.progress.AchievementDto;
 
 import java.util.ArrayList;
@@ -25,10 +26,11 @@ public class LessonSubmissionResult {
     private boolean passed;
     private String message;
     private List<AnswerResultDto> results;
-    
+
     @Builder.Default
     private List<AchievementDto> newAchievements = new ArrayList<>();
-    
+
     private boolean streakUpdated;
     private int currentStreak;
+    private InventoryItemDto newItem; // nullable — set when an item drops on lesson completion
 }

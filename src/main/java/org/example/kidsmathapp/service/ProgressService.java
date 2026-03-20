@@ -156,9 +156,6 @@ public class ProgressService {
         if (markCompleted && !Boolean.TRUE.equals(progress.getCompleted())) {
             progress.setCompleted(true);
             progress.setCompletedAt(LocalDateTime.now());
-            // Award stars directly on child entity for first completion
-            child.setTotalStars(child.getTotalStars() + lesson.getStarsReward());
-            childRepository.save(child);
         }
 
         return progressRepository.save(progress);

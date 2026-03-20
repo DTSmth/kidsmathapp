@@ -1,5 +1,6 @@
 package org.example.kidsmathapp.dto.content;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,7 @@ public class GameScoreResultDto {
     private Integer score;
     private Integer starsEarned;
     private Integer personalBestScore;
+    @JsonProperty("isNewPersonalBest")
     private boolean isNewPersonalBest;
     private boolean streakUpdated;
     private List<AchievementDto> newAchievements;
