@@ -3,6 +3,7 @@ package org.example.kidsmathapp.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.example.kidsmathapp.entity.enums.GameMode;
 
 import java.time.LocalDateTime;
 
@@ -35,6 +36,11 @@ public class GameScore extends BaseEntity {
     // JSON array of {questionId, answeredAt} for ghost race replay
     @Column(name = "answers_log", columnDefinition = "TEXT")
     private String answersLog;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "game_mode", nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'NORMAL'")
+    @Builder.Default
+    private GameMode gameMode = GameMode.NORMAL;
 
     @Column(name = "played_at", nullable = false)
     private LocalDateTime playedAt;

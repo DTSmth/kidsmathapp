@@ -19,5 +19,7 @@ public interface StreakRepository extends JpaRepository<Streak, Long> {
 
     List<Streak> findByChildIdAndDateBetween(Long childId, LocalDate startDate, LocalDate endDate);
 
+    List<Streak> findByChildIdAndDateBetweenOrderByDateAsc(Long childId, LocalDate from, LocalDate to);
+
     boolean existsByChildIdAndDate(Long childId, LocalDate date);
 }

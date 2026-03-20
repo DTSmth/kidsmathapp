@@ -46,7 +46,10 @@
       "Bash(/dev/null echo:*)",
       "Bash(npx tsc:*)",
       "Bash(JAVA_HOME=\"/c/Users/duckt/.jdks/corretto-17.0.16\" ./mvnw compile -q)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(./mvnw clean:*)",
+      "Read(//c/Program Files/**)",
+      "Bash(JAVA_HOME=\"/c/Users/duckt/.jdks/corretto-17.0.16\" ./mvnw clean package -q)"
     ]
   }
 }

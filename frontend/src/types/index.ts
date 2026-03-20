@@ -210,6 +210,7 @@ export interface GameDetailDto {
   baseStarsReward: number;
   timeLimit: number;
   questions: QuestionDto[];
+  bestAnswersLog?: string; // JSON answersLog of child's best run for ghost race
 }
 
 export interface GameScoreRequest {
@@ -218,6 +219,7 @@ export interface GameScoreRequest {
   timeSpent: number;
   comboBonus: number;
   answersLog?: string;
+  gameMode?: string; // 'NORMAL' | 'ENDLESS'
 }
 
 export interface GameScoreResult {
@@ -228,12 +230,82 @@ export interface GameScoreResult {
   streakUpdated: boolean;
   newAchievements: AchievementDto[];
   gamificationApplied: boolean;
+  newItem?: InventoryItemDto;
 }
 
 export interface PendingGameScore {
   gameId: number;
   request: GameScoreRequest;
   timestamp: number;
+}
+
+// Engagement Engine types
+
+export type RankLevel = 'STARTER' | 'EXPLORER' | 'CHAMPION' | 'WIZARD' | 'LEGEND';
+export type ItemTier = 'COMMON' | 'RARE' | 'LEGENDARY';
+export type ItemType = 'HAT' | 'PET' | 'CAPE' | 'FRAME' | 'BACKGROUND';
+export type GameMode = 'NORMAL' | 'ENDLESS';
+
+export interface StreakDayDto {
+  date: string;
+  practiced: boolean;
+  practiceCount: number;
+  dailyBonusClaimed: boolean;
+  isToday: boolean;
+}
+
+export interface StreakCalendarDto {
+  currentStreak: number;
+  longestStreak: number;
+  days: StreakDayDto[];
+}
+
+export interface InventoryItemDto {
+  inventoryId: number;
+  itemId: number;
+  name: string;
+  emoji: string;
+  tier: ItemTier;
+  itemType: ItemType;
+  equipped: boolean;
+  equippedSlot: ItemType | null;
+  earnedAt: string;
+}
+
+export interface InventoryDto {
+  childId: number;
+  items: InventoryItemDto[];
+  equipped: Record<string, InventoryItemDto>;
+  totalItems: number;
+}
+
+export interface DailyBonusResponse {
+  itemGranted: boolean;
+  item: InventoryItemDto | null;
+  alreadyClaimed: boolean;
+}
+
+export interface LeaderboardEntryDto {
+  rank: number;
+  childId: number;
+  childName: string;
+  avatarId: number;
+  value: number;
+  currentStreak: number;
+  isCurrentChild: boolean;
+}
+
+export interface FamilyLeaderboardDto {
+  starRankings: LeaderboardEntryDto[];
+  streakRankings: LeaderboardEntryDto[];
+  currentChildRankByStars: number;
+  currentChildRankByStreak: number;
+}
+
+export interface GameLeaderboardDto {
+  gameId: number;
+  gameMode: GameMode;
+  entries: LeaderboardEntryDto[];
 }
 
 // Dashboard DTO
@@ -245,4 +317,7 @@ export interface DashboardDto {
   topics: TopicProgressDto[];
   recentAchievements: AchievementDto[];
   dailyChallengeComplete: boolean;
+  rankLevel: RankLevel;
+  rankLevelEmoji: string;
+  starsToNextRank: number | null;
 }

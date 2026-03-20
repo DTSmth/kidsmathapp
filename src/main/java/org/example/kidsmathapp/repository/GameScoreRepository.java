@@ -38,4 +38,7 @@ public interface GameScoreRepository extends JpaRepository<GameScore, Long> {
     // Count plays per game to detect difficulty adaptation eligibility
     @Query("SELECT gs.game.id, COUNT(gs) FROM GameScore gs WHERE gs.child.id = :childId GROUP BY gs.game.id")
     List<Object[]> countPlaysByGameForChild(@Param("childId") Long childId);
+
+    @Query("SELECT gs FROM GameScore gs JOIN FETCH gs.child WHERE gs.game.id = :gameId AND gs.gameMode = :gameMode AND gs.child.parent.id = :parentId ORDER BY gs.score DESC")
+    List<GameScore> findFamilyLeaderboard(@Param("gameId") Long gameId, @Param("gameMode") String gameMode, @Param("parentId") Long parentId, org.springframework.data.domain.Pageable pageable);
 }

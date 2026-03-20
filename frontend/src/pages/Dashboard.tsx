@@ -5,9 +5,16 @@ import Layout from '../components/layout/Layout';
 import DailyChallengeBanner from '../components/common/DailyChallengeBanner';
 import { getChildDashboard } from '../services/progress';
 import { Star, Flame, Trophy, Gamepad2 } from 'lucide-react';
-import type { DashboardDto, GameDto } from '../types';
+import type { DashboardDto, GameDto, StreakCalendarDto, FamilyLeaderboardDto, InventoryItemDto } from '../types';
 import { getGames } from '../services/games';
 import { GAME_CONFIG } from '../components/games/gameConfig';
+import { StreakCalendar } from '../components/engagement/StreakCalendar';
+import { RankBadge } from '../components/engagement/RankBadge';
+import { ItemChest } from '../components/engagement/ItemChest';
+import { Leaderboard } from '../components/engagement/Leaderboard';
+import { claimDailyBonus } from '../services/inventory';
+import { getFamilyLeaderboard } from '../services/leaderboard';
+import api from '../services/api';
 
 const Dashboard = () => {
   const { selectedChild } = useChild();
@@ -15,6 +22,18 @@ const Dashboard = () => {
   const [dashboard, setDashboard] = useState<DashboardDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [games, setGames] = useState<GameDto[]>([]);
+
+  // Streak calendar
+  const [streakCalendar, setStreakCalendar] = useState<StreakCalendarDto | null>(null);
+
+  // Daily bonus
+  const [dailyBonusClaiming, setDailyBonusClaiming] = useState(false);
+  const [dailyBonusClaimed, setDailyBonusClaimed] = useState(false);
+  const [newItem, setNewItem] = useState<InventoryItemDto | null>(null);
+
+  // Leaderboard
+  const [leaderboard, setLeaderboard] = useState<FamilyLeaderboardDto | null>(null);
+  const [leaderboardTab, setLeaderboardTab] = useState<'stars' | 'streaks'>('stars');
 
   useEffect(() => {
     if (!selectedChild) return;
@@ -26,22 +45,97 @@ const Dashboard = () => {
     getGames(selectedChild.id)
       .then(data => setGames(data.slice(0, 3)))
       .catch(() => {});
+
+    // Fetch streak calendar
+    api.get(`/streaks/${selectedChild.id}/calendar`)
+      .then(r => setStreakCalendar(r.data.data))
+      .catch(() => {});
+
+    // Fetch family leaderboard
+    getFamilyLeaderboard(selectedChild.id)
+      .then(setLeaderboard)
+      .catch(() => {});
   }, [selectedChild]);
+
+  const handleClaimDailyBonus = async () => {
+    if (!selectedChild || dailyBonusClaiming) return;
+    setDailyBonusClaiming(true);
+    try {
+      const result = await claimDailyBonus(selectedChild.id);
+      setDailyBonusClaimed(true);
+      if (result.itemGranted && result.item) {
+        setNewItem(result.item);
+      }
+      // Refresh streak calendar after claiming
+      api.get(`/streaks/${selectedChild.id}/calendar`)
+        .then(r => setStreakCalendar(r.data.data))
+        .catch(() => {});
+    } catch {
+      // silently fail
+    } finally {
+      setDailyBonusClaiming(false);
+    }
+  };
 
   if (!selectedChild) return null;
 
   const streak = selectedChild.currentStreak;
 
+  // Determine if daily bonus is available
+  const todayEntry = streakCalendar?.days.find(d => d.isToday);
+  const showDailyBonusBanner =
+    !dailyBonusClaimed &&
+    todayEntry !== undefined &&
+    !todayEntry.dailyBonusClaimed;
+
   return (
     <Layout>
+      {/* Item chest modal */}
+      {newItem && (
+        <ItemChest item={newItem} onClose={() => setNewItem(null)} />
+      )}
+
       <div className="space-y-6">
-        {/* Welcome */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Hi, {selectedChild.name}! 👋</h1>
-          {streak > 0 && (
-            <p className="text-sm text-gray-500 mt-1">You're on a {streak} day streak — keep it up!</p>
-          )}
+        {/* Welcome + nav buttons */}
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Hi, {selectedChild.name}! 👋</h1>
+            {streak > 0 && (
+              <p className="text-sm text-gray-500 mt-1">You're on a {streak} day streak — keep it up!</p>
+            )}
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={() => navigate('/collector')}
+              className="text-xl hover:scale-110 transition-transform"
+              title="Collector's Album"
+            >
+              🏆
+            </button>
+            <button
+              onClick={() => navigate('/avatar')}
+              className="text-xl hover:scale-110 transition-transform"
+              title="Customize Avatar"
+            >
+              ✨
+            </button>
+          </div>
         </div>
+
+        {/* Daily bonus banner */}
+        {showDailyBonusBanner && (
+          <button
+            onClick={handleClaimDailyBonus}
+            disabled={dailyBonusClaiming}
+            className="w-full bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-2xl px-5 py-4 flex items-center justify-between shadow-md hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            <div className="text-left">
+              <p className="font-bold text-lg">🎁 Claim Daily Bonus!</p>
+              <p className="text-sm opacity-90">Practice today and earn a surprise item</p>
+            </div>
+            <span className="text-2xl">{dailyBonusClaiming ? '⏳' : '→'}</span>
+          </button>
+        )}
 
         {/* Stats */}
         <div className="flex gap-3">
@@ -58,6 +152,21 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+
+        {/* Rank Badge */}
+        {dashboard?.rankLevel && (
+          <RankBadge
+            rankLevel={dashboard.rankLevel}
+            emoji={dashboard.rankLevelEmoji}
+            starsToNextRank={dashboard.starsToNextRank}
+            totalStars={dashboard.totalStars}
+          />
+        )}
+
+        {/* Streak Calendar */}
+        {streakCalendar && (
+          <StreakCalendar data={streakCalendar} />
+        )}
 
         {/* Daily challenge */}
         {dashboard && (
@@ -150,6 +259,50 @@ const Dashboard = () => {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Family Leaderboard */}
+        {leaderboard && (
+          <div>
+            <h2 className="text-base font-semibold text-gray-800 mb-3">👨‍👩‍👧 Family Leaderboard</h2>
+            <div className="flex gap-2 mb-3">
+              <button
+                onClick={() => setLeaderboardTab('stars')}
+                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all
+                  ${leaderboardTab === 'stars'
+                    ? 'bg-amber-400 text-white shadow-md'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-amber-300'}
+                `}
+              >
+                ⭐ Stars
+              </button>
+              <button
+                onClick={() => setLeaderboardTab('streaks')}
+                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all
+                  ${leaderboardTab === 'streaks'
+                    ? 'bg-orange-400 text-white shadow-md'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300'}
+                `}
+              >
+                🔥 Streaks
+              </button>
+            </div>
+            {leaderboardTab === 'stars' ? (
+              <Leaderboard
+                entries={leaderboard.starRankings}
+                valueLabel="stars"
+                valueUnit="⭐"
+                emptyMessage="No star rankings yet!"
+              />
+            ) : (
+              <Leaderboard
+                entries={leaderboard.streakRankings}
+                valueLabel="day streak"
+                valueUnit="🔥"
+                emptyMessage="No streak rankings yet!"
+              />
+            )}
           </div>
         )}
       </div>

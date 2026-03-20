@@ -25,9 +25,9 @@ public class LessonController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<LessonDetailDto>> getLessonDetail(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Long id) {
-        // Authentication verified, lesson details don't require specific child context
-        LessonDetailDto lesson = contentService.getLessonDetail(id);
+            @PathVariable Long id,
+            @RequestParam(required = false) Long childId) {
+        LessonDetailDto lesson = contentService.getLessonDetail(id, childId);
         return ResponseEntity.ok(ApiResponse.success(lesson));
     }
 

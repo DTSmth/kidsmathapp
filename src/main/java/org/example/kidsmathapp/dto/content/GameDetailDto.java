@@ -20,4 +20,5 @@ public class GameDetailDto {
     private Integer baseStarsReward;
     private Integer timeLimit;
     private List<QuestionDto> questions;
+    private String bestAnswersLog; // JSON answersLog of child's personal best run (for ghost race); nullable
 }

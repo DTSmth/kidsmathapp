@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { GAME_CONFIG } from '../components/games/gameConfig';
 import type { GameResult } from '../hooks/useGameEngine';
-import type { GameScoreResult, GameType } from '../types';
+import type { GameScoreResult, GameType, InventoryItemDto } from '../types';
 import { Star, Trophy, RotateCcw, Home } from 'lucide-react';
+import { ItemChest } from '../components/engagement/ItemChest';
 
 interface LocationState {
   result: GameResult;
@@ -19,6 +20,10 @@ const GameComplete = () => {
   const state = location.state as LocationState | null;
 
   const [starsVisible, setStarsVisible] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const [chestItem, setChestItem] = useState<InventoryItemDto | null>(
+    state?.gameResult?.newItem ?? null
+  );
 
   const result = state?.result;
   const gameResult = state?.gameResult;
@@ -52,6 +57,10 @@ const GameComplete = () => {
   }
 
   return (
+    <>
+    {chestItem && (
+      <ItemChest item={chestItem} onClose={() => setChestItem(null)} />
+    )}
     <div
       className="min-h-screen flex flex-col items-center justify-center gap-6 px-6 py-10"
       style={{ background: `linear-gradient(135deg, ${cfg.color}22, ${cfg.color}08)` }}
@@ -116,15 +125,17 @@ const GameComplete = () => {
       {/* Actions */}
       <div className="flex gap-3 w-full max-w-xs">
         <button
-          onClick={() => navigate(`/games/${gameId}/play`)}
-          className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-gray-200 text-gray-700 font-bold rounded-2xl py-3 hover:border-gray-300 transition-colors"
+          onClick={() => { if (!submitted) { setSubmitted(true); navigate(`/games/${gameId}/play`); } }}
+          disabled={submitted}
+          className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-gray-200 text-gray-700 font-bold rounded-2xl py-3 hover:border-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RotateCcw className="w-4 h-4" />
           Play Again
         </button>
         <button
-          onClick={() => navigate('/play')}
-          className="flex-1 flex items-center justify-center gap-2 text-white font-bold rounded-2xl py-3 shadow-md hover:opacity-90 transition-opacity"
+          onClick={() => { if (!submitted) { setSubmitted(true); navigate('/play'); } }}
+          disabled={submitted}
+          className="flex-1 flex items-center justify-center gap-2 text-white font-bold rounded-2xl py-3 shadow-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ backgroundColor: cfg.color }}
         >
           <Home className="w-4 h-4" />
@@ -132,6 +143,7 @@ const GameComplete = () => {
         </button>
       </div>
     </div>
+    </>
   );
 };
 

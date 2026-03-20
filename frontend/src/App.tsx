@@ -15,6 +15,8 @@ import TopicList from './pages/TopicList';
 import Play from './pages/Play';
 import GamePlay from './pages/GamePlay';
 import GameComplete from './pages/GameComplete';
+import CollectorAlbum from './pages/CollectorAlbum';
+import AvatarCustomizer from './pages/AvatarCustomizer';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -157,6 +159,26 @@ function App() {
             <ProtectedRoute>
               <ChildProtectedRoute>
                 <Achievements />
+              </ChildProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/collector"
+          element={
+            <ProtectedRoute>
+              <ChildProtectedRoute>
+                <CollectorAlbum />
+              </ChildProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/avatar"
+          element={
+            <ProtectedRoute>
+              <ChildProtectedRoute>
+                <AvatarCustomizer />
               </ChildProtectedRoute>
             </ProtectedRoute>
           }

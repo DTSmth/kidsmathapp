@@ -67,14 +67,10 @@ Add rate limiting to `POST /api/v1/questions/{id}/check` — 60 checks/minute pe
 
 ---
 
-### Games Section
-Build `GameController`, `GameService`, and the frontend games browser + game flow using the already-seeded `Game` and `GameScore` entities.
+### ~~Games Section~~ ✅ DONE (2026-03-19)
+~~Build `GameController`, `GameService`, and the frontend games browser + game flow using the already-seeded `Game` and `GameScore` entities.~~
 
-**Why:** The data model is complete and DataSeeder already seeds game definitions. Math games (speed drills, number matching, pattern recognition) are a proven engagement driver for kids ages 5-10. This is Phase 2's biggest retention feature.
-**Effort:** L (human: ~3 days / CC: ~1.5h)
-**Priority:** P2
-**Depends on:** MVP completion (lesson flow) — establishes component patterns that games can reuse.
-**Where to start:** `GameRepository`, new `GameService`, `GameController` at `/api/v1/games`, then frontend `Games.tsx` page.
+Shipped in commit `b269ae4`. All 5 games (Number Pop, Counting Critters, Shape Safari, Math Race, Pattern Parade) are live with full game engines, `GamePlay.tsx`, `GameComplete.tsx`, and `GameScore` persistence.
 
 ---
 
@@ -84,5 +80,27 @@ Track per-child accuracy per topic (rolling 10-question window) and automaticall
 **Why:** This is the product differentiator that transforms KidsMathApp from a "content player" into a "learning engine." A child who aces 10 easy addition questions should get medium ones. A child struggling with hard subtraction should get easy ones. The `Difficulty` enum on `Question` is already in place.
 **Effort:** XL (human: ~2 weeks / CC: ~2h)
 **Priority:** P2
-**Depends on:** Games section (can share the accuracy tracking infrastructure).
-**Where to start:** New `AccuracyTracker` service that maintains a rolling per-child-per-topic accuracy score; modify `QuestionService` to query by difficulty bucket matching current accuracy.
+**Depends on:** Games section ✅ (done). **RankLevel from the Engagement Engine plan is a ready input signal** — CHAMPION+ kids can default to MEDIUM questions, LEGEND kids to HARD, without needing per-topic accuracy tracking as a prerequisite.
+**Where to start:** New `AccuracyTracker` service that maintains a rolling per-child-per-topic accuracy score; modify `QuestionService` to query by difficulty bucket matching current accuracy. For a fast first version: use `RankLevel` as a proxy before full accuracy tracking is built.
+
+---
+
+### Seasonal Events Infrastructure
+Build limited-time item drops tied to calendar dates (Winter Math Festival: Dec 1-31, Back-to-School: Sep 1-30). Kids return for limited-time cosmetic items.
+
+**Why:** Seasonal urgency is the strongest known retention driver after streaks. The `AvatarItem.unlockCondition` field introduced by the Engagement Engine plan supports time-bounded conditions (e.g., `{"type": "date_range", "start": "12-01", "end": "12-31"}`). The infrastructure is ready — seasonal events just need a banner + a time-window check in `ItemDropService`.
+**Effort:** M (human: ~3d / CC: ~20 min)
+**Priority:** P2
+**Depends on:** Engagement Engine (AvatarItem + ChildInventory tables must exist first).
+**Where to start:** Add `seasonStart` and `seasonEnd` fields to `AvatarItem`. Add a `SeasonalBannerComponent` to Dashboard. Seed 3-5 seasonal items per season in DataSeeder with date-bounded conditions.
+
+---
+
+### Ghost Race Share URL
+`GameScore.answersLog` already stores per-answer timing for ghost race replay. A future "Share your best run" feature could encode the answersLog into a short share URL, letting kids share a replay with friends or parents.
+
+**Why:** Social sharing creates organic acquisition — parents share kids' achievements, siblings challenge each other. The data is already captured; only a URL encoder + replay renderer is needed.
+**Effort:** M (human: ~2d / CC: ~20 min)
+**Priority:** P3
+**Depends on:** Ghost Race mode (Engagement Engine plan).
+**Where to start:** Encode `answersLog` as a base64 URL param. Build a `/replay/{gameId}?run={encoded}` page that plays back the ghost animation without requiring login.

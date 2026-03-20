@@ -23,6 +23,10 @@ public class Streak extends BaseEntity {
     @Column(name = "practice_count", nullable = false)
     private Integer practiceCount;
 
+    @Builder.Default
+    @Column(name = "daily_bonus_claimed", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean dailyBonusClaimed = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id", nullable = false)
     private Child child;

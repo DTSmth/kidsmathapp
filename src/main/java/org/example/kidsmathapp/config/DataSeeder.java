@@ -3,6 +3,7 @@ package org.example.kidsmathapp.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.kidsmathapp.entity.Achievement;
+import org.example.kidsmathapp.entity.AvatarItem;
 import org.example.kidsmathapp.entity.Game;
 import org.example.kidsmathapp.entity.Lesson;
 import org.example.kidsmathapp.entity.Question;
@@ -12,6 +13,7 @@ import org.example.kidsmathapp.entity.enums.GameType;
 import org.example.kidsmathapp.entity.enums.GradeLevel;
 import org.example.kidsmathapp.entity.enums.QuestionType;
 import org.example.kidsmathapp.repository.AchievementRepository;
+import org.example.kidsmathapp.repository.AvatarItemRepository;
 import org.example.kidsmathapp.repository.GameRepository;
 import org.example.kidsmathapp.repository.LessonRepository;
 import org.example.kidsmathapp.repository.QuestionRepository;
@@ -36,6 +38,7 @@ public class DataSeeder implements CommandLineRunner {
     private final AchievementRepository achievementRepository;
     private final QuestionRepository questionRepository;
     private final GameRepository gameRepository;
+    private final AvatarItemRepository avatarItemRepository;
 
     @Override
     @Transactional
@@ -59,6 +62,8 @@ public class DataSeeder implements CommandLineRunner {
         // Always run question text fixes (idempotent)
         fixNumberRecognitionQuestions();
         fixGameQuestions();
+        // Always seed avatar items (idempotent via existsByName check)
+        seedAvatarItems();
     }
 
     @Transactional
@@ -612,6 +617,57 @@ public class DataSeeder implements CommandLineRunner {
                 .build();
     }
 
-    private record AchievementData(String name, String description, String badge, 
+    private void seedAvatarItems() {
+        log.info("Seeding avatar items...");
+        record ItemData(String name, String emoji, String tier, String type, String condition) {}
+
+        List<ItemData> items = List.of(
+            // Common items (12)
+            new ItemData("Star Sticker", "🌟", "COMMON", "FRAME", "{\"type\":\"always\"}"),
+            new ItemData("Rainbow Stripe", "🌈", "COMMON", "BACKGROUND", "{\"type\":\"always\"}"),
+            new ItemData("Book Badge", "📚", "COMMON", "FRAME", "{\"type\":\"lessons_completed\",\"count\":3}"),
+            new ItemData("Bull's Eye", "🎯", "COMMON", "FRAME", "{\"type\":\"always\"}"),
+            new ItemData("Sunshine", "☀️", "COMMON", "BACKGROUND", "{\"type\":\"always\"}"),
+            new ItemData("Purple Bow", "🎀", "COMMON", "HAT", "{\"type\":\"always\"}"),
+            new ItemData("Baseball Cap", "🧢", "COMMON", "HAT", "{\"type\":\"lessons_completed\",\"count\":5}"),
+            new ItemData("Party Blower", "🎉", "COMMON", "FRAME", "{\"type\":\"always\"}"),
+            new ItemData("Paw Print", "🐾", "COMMON", "BACKGROUND", "{\"type\":\"always\"}"),
+            new ItemData("Sparkle Ring", "💍", "COMMON", "FRAME", "{\"type\":\"stars\",\"count\":50}"),
+            new ItemData("Music Note", "🎵", "COMMON", "BACKGROUND", "{\"type\":\"always\"}"),
+            new ItemData("Daisy", "🌼", "COMMON", "HAT", "{\"type\":\"always\"}"),
+            // Rare items (8)
+            new ItemData("Top Hat", "🎩", "RARE", "HAT", "{\"type\":\"stars\",\"count\":200}"),
+            new ItemData("Butterfly Cape", "🦋", "RARE", "CAPE", "{\"type\":\"streak\",\"days\":7}"),
+            new ItemData("Crystal Ball", "🔮", "RARE", "FRAME", "{\"type\":\"stars\",\"count\":300}"),
+            new ItemData("Fox Friend", "🦊", "RARE", "PET", "{\"type\":\"lessons_completed\",\"count\":10}"),
+            new ItemData("Dragon Wings", "🐉", "RARE", "CAPE", "{\"type\":\"streak\",\"days\":14}"),
+            new ItemData("Wizard Hat", "🧙", "RARE", "HAT", "{\"type\":\"stars\",\"count\":400}"),
+            new ItemData("Turtle Pal", "🐢", "RARE", "PET", "{\"type\":\"stars\",\"count\":250}"),
+            new ItemData("Streak Shield", "🛡️", "RARE", "FRAME", "{\"type\":\"streak\",\"days\":7}"),
+            // Legendary items (5)
+            new ItemData("Golden Crown", "👑", "LEGENDARY", "HAT", "{\"type\":\"streak\",\"days\":30}"),
+            new ItemData("Speed Lightning", "⚡", "LEGENDARY", "CAPE", "{\"type\":\"stars\",\"count\":1000}"),
+            new ItemData("Champion Trophy", "🏆", "LEGENDARY", "FRAME", "{\"type\":\"stars\",\"count\":500}"),
+            new ItemData("Midnight Star", "🌙", "LEGENDARY", "BACKGROUND", "{\"type\":\"streak\",\"days\":100}"),
+            new ItemData("Unicorn Friend", "🦄", "LEGENDARY", "PET", "{\"type\":\"stars\",\"count\":2000}")
+        );
+
+        for (ItemData item : items) {
+            if (!avatarItemRepository.existsByName(item.name())) {
+                AvatarItem avatarItem = AvatarItem.builder()
+                        .name(item.name())
+                        .emoji(item.emoji())
+                        .tier(org.example.kidsmathapp.entity.enums.ItemTier.valueOf(item.tier()))
+                        .itemType(org.example.kidsmathapp.entity.enums.ItemType.valueOf(item.type()))
+                        .unlockCondition(item.condition())
+                        .build();
+                avatarItemRepository.save(avatarItem);
+                log.info("Created avatar item: {} {}", item.emoji(), item.name());
+            }
+        }
+        log.info("Avatar items seeding complete");
+    }
+
+    private record AchievementData(String name, String description, String badge,
                                    String condition, int starsBonus) {}
 }

@@ -10,6 +10,7 @@ import org.example.kidsmathapp.entity.Child;
 import org.example.kidsmathapp.entity.Lesson;
 import org.example.kidsmathapp.entity.Progress;
 import org.example.kidsmathapp.entity.Topic;
+import org.example.kidsmathapp.entity.enums.RankLevel;
 import org.example.kidsmathapp.exception.ApiException;
 import org.example.kidsmathapp.repository.ChildRepository;
 import org.example.kidsmathapp.repository.LessonRepository;
@@ -126,6 +127,9 @@ public class ProgressService {
 
         child = childRepository.findById(childId).orElse(child);
 
+        org.example.kidsmathapp.dto.inventory.InventoryItemDto droppedItem =
+                gamification.newItems().isEmpty() ? null : gamification.newItems().get(0);
+
         return LessonCompletionResult.builder()
                 .starsEarned(baseStars)
                 .bonusStars(bonusStars)
@@ -133,6 +137,7 @@ public class ProgressService {
                 .newAchievements(gamification.newAchievements())
                 .streakUpdated(gamification.streakUpdated())
                 .currentStreak(child.getCurrentStreak())
+                .newItem(droppedItem)
                 .build();
     }
 
@@ -258,6 +263,9 @@ public class ProgressService {
         // Check if daily challenge is complete (had activity today)
         boolean dailyChallengeComplete = streakService.hasActivityToday(childId);
 
+        RankLevel rankLevel = RankLevel.fromStars(child.getTotalStars());
+        int starsToNextRank = rankLevel.getNextLevelStars() - child.getTotalStars();
+
         return DashboardDto.builder()
                 .childId(child.getId())
                 .childName(child.getName())
@@ -266,6 +274,9 @@ public class ProgressService {
                 .topics(topicProgressList)
                 .recentAchievements(recentAchievements)
                 .dailyChallengeComplete(dailyChallengeComplete)
+                .rankLevel(rankLevel.name())
+                .rankLevelEmoji(rankLevel.getEmoji())
+                .starsToNextRank(Math.max(0, starsToNextRank))
                 .build();
     }
 }

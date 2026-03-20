@@ -5,6 +5,7 @@ import org.example.kidsmathapp.dto.progress.LessonCompletionResult;
 import org.example.kidsmathapp.entity.Child;
 import org.example.kidsmathapp.entity.Lesson;
 import org.example.kidsmathapp.entity.Progress;
+import org.example.kidsmathapp.entity.enums.RankLevel;
 import org.example.kidsmathapp.exception.ApiException;
 import org.example.kidsmathapp.repository.ChildRepository;
 import org.example.kidsmathapp.repository.LessonRepository;
@@ -17,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +28,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -48,6 +49,18 @@ class ProgressServiceTest {
     private Child child;
     private Lesson lesson;
 
+    /** Convenience: build a no-op OrchestratorResult with the current 6-field record signature. */
+    private static GamificationOrchestrator.OrchestratorResult emptyResult(boolean streakUpdated) {
+        return new GamificationOrchestrator.OrchestratorResult(
+                streakUpdated,
+                false,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                RankLevel.STARTER,
+                RankLevel.STARTER
+        );
+    }
+
     @BeforeEach
     void setUp() {
         child = Child.builder()
@@ -68,7 +81,7 @@ class ProgressServiceTest {
         when(progressRepository.save(any())).thenAnswer(i -> i.getArgument(0));
         when(childRepository.save(any())).thenAnswer(i -> i.getArgument(0));
         when(gamificationOrchestrator.orchestrate(anyLong(), anyInt(), anyString()))
-                .thenReturn(new GamificationOrchestrator.OrchestratorResult(false, List.of()));
+                .thenReturn(emptyResult(false));
 
         LessonCompletionResult result = progressService.recordLessonCompletion(1L, 1L, 80);
 
@@ -84,7 +97,7 @@ class ProgressServiceTest {
         when(progressRepository.save(any())).thenAnswer(i -> i.getArgument(0));
         when(childRepository.save(any())).thenAnswer(i -> i.getArgument(0));
         when(gamificationOrchestrator.orchestrate(anyLong(), anyInt(), anyString()))
-                .thenReturn(new GamificationOrchestrator.OrchestratorResult(false, List.of()));
+                .thenReturn(emptyResult(false));
 
         LessonCompletionResult result = progressService.recordLessonCompletion(1L, 1L, 90);
 
@@ -100,7 +113,7 @@ class ProgressServiceTest {
         when(progressRepository.save(any())).thenAnswer(i -> i.getArgument(0));
         when(childRepository.save(any())).thenAnswer(i -> i.getArgument(0));
         when(gamificationOrchestrator.orchestrate(anyLong(), anyInt(), anyString()))
-                .thenReturn(new GamificationOrchestrator.OrchestratorResult(false, List.of()));
+                .thenReturn(emptyResult(false));
 
         LessonCompletionResult result = progressService.recordLessonCompletion(1L, 1L, 89);
 
@@ -139,7 +152,7 @@ class ProgressServiceTest {
                 .thenReturn(Optional.of(existingProgress));
         when(progressRepository.save(any())).thenAnswer(i -> i.getArgument(0));
         when(gamificationOrchestrator.orchestrate(anyLong(), anyInt(), anyString()))
-                .thenReturn(new GamificationOrchestrator.OrchestratorResult(false, List.of()));
+                .thenReturn(emptyResult(false));
 
         progressService.recordLessonCompletion(1L, 1L, 70);
 

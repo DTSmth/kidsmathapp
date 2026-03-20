@@ -1,6 +1,8 @@
 package org.example.kidsmathapp.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.kidsmathapp.dto.progress.StreakCalendarDto;
 import org.example.kidsmathapp.entity.Child;
 import org.example.kidsmathapp.entity.Streak;
 import org.example.kidsmathapp.exception.ApiException;
@@ -10,8 +12,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StreakService {
@@ -19,8 +25,10 @@ public class StreakService {
     private final StreakRepository streakRepository;
     private final ChildRepository childRepository;
 
+    public record StreakResult(boolean updated, boolean wouldHaveBroken, int previousStreak) {}
+
     @Transactional
-    public boolean recordActivity(Long childId) {
+    public StreakResult recordActivity(Long childId) {
         Child child = childRepository.findById(childId)
                 .orElseThrow(() -> ApiException.notFound("Child not found with id: " + childId));
 
@@ -34,7 +42,7 @@ public class StreakService {
             Streak todayStreak = todayStreakOpt.get();
             todayStreak.setPracticeCount(todayStreak.getPracticeCount() + 1);
             streakRepository.save(todayStreak);
-            return false; // Streak was not updated (already counted today)
+            return new StreakResult(false, false, child.getCurrentStreak()); // Streak was not updated (already counted today)
         }
 
         // Create new streak record for today
@@ -42,6 +50,7 @@ public class StreakService {
                 .child(child)
                 .date(today)
                 .practiceCount(1)
+                .dailyBonusClaimed(false)
                 .build();
         streakRepository.save(todayStreak);
 
@@ -51,13 +60,24 @@ public class StreakService {
         if (hadActivityYesterday) {
             // Continue the streak
             child.setCurrentStreak(child.getCurrentStreak() + 1);
+            childRepository.save(child);
+            return new StreakResult(true, false, child.getCurrentStreak() - 1);
         } else {
-            // Reset streak to 1 (today is the first day)
+            // Streak breaks — reset to 1
+            int previousStreak = child.getCurrentStreak();
             child.setCurrentStreak(1);
+            childRepository.save(child);
+            return new StreakResult(true, true, previousStreak);
         }
+    }
 
+    @Transactional
+    public void preserveStreak(Long childId, int previousStreak) {
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> ApiException.notFound("Child not found with id: " + childId));
+        child.setCurrentStreak(previousStreak + 1); // keep the streak going
         childRepository.save(child);
-        return true; // Streak was updated
+        log.info("Streak preserved for child {} via shield: {} → {}", childId, previousStreak, previousStreak + 1);
     }
 
     @Transactional(readOnly = true)
@@ -71,5 +91,37 @@ public class StreakService {
     @Transactional(readOnly = true)
     public boolean hasActivityToday(Long childId) {
         return streakRepository.existsByChildIdAndDate(childId, LocalDate.now());
+    }
+
+    @Transactional(readOnly = true)
+    public StreakCalendarDto getStreakCalendar(Long childId) {
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> ApiException.notFound("Child not found with id: " + childId));
+
+        LocalDate today = LocalDate.now();
+        LocalDate thirtyDaysAgo = today.minusDays(29);
+
+        List<Streak> streaks = streakRepository.findByChildIdAndDateBetweenOrderByDateAsc(
+                childId, thirtyDaysAgo, today);
+
+        // Build day-by-day for last 30 days
+        List<StreakCalendarDto.StreakDayDto> days = new ArrayList<>();
+        for (int i = 29; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            Streak streak = streaks.stream().filter(s -> s.getDate().equals(date)).findFirst().orElse(null);
+            days.add(StreakCalendarDto.StreakDayDto.builder()
+                    .date(date)
+                    .practiced(streak != null && streak.getPracticeCount() > 0)
+                    .practiceCount(streak != null ? streak.getPracticeCount() : 0)
+                    .dailyBonusClaimed(streak != null && Boolean.TRUE.equals(streak.getDailyBonusClaimed()))
+                    .isToday(date.equals(today))
+                    .build());
+        }
+
+        return StreakCalendarDto.builder()
+                .currentStreak(child.getCurrentStreak())
+                .longestStreak(child.getCurrentStreak()) // simplified - could track separately
+                .days(days)
+                .build();
     }
 }

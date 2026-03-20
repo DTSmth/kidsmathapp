@@ -26,4 +26,8 @@ public class DashboardDto {
     private List<AchievementDto> recentAchievements = new ArrayList<>();
     
     private boolean dailyChallengeComplete;
+
+    private String rankLevel;      // e.g. "EXPLORER"
+    private String rankLevelEmoji; // e.g. "🌟"
+    private int starsToNextRank;   // 0 if LEGEND
 }

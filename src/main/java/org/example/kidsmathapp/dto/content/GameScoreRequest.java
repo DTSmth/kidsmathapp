@@ -29,4 +29,7 @@ public class GameScoreRequest {
 
     // JSON array [{questionId, answeredAt}] for ghost race replay
     private String answersLog;
+
+    @Builder.Default
+    private String gameMode = "NORMAL"; // "NORMAL" or "ENDLESS"
 }

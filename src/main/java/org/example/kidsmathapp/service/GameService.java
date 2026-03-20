@@ -11,6 +11,8 @@ import org.example.kidsmathapp.entity.Game;
 import org.example.kidsmathapp.entity.GameScore;
 import org.example.kidsmathapp.entity.Question;
 import org.example.kidsmathapp.entity.enums.Difficulty;
+import org.example.kidsmathapp.entity.enums.GameMode;
+import org.example.kidsmathapp.entity.enums.ItemDropSource;
 import org.example.kidsmathapp.exception.ApiException;
 import org.example.kidsmathapp.repository.*;
 import org.springframework.stereotype.Service;
@@ -87,6 +89,11 @@ public class GameService {
                 .map(this::toQuestionDto)
                 .collect(Collectors.toList());
 
+        String bestAnswersLog = gameScoreRepository
+                .findTopByChildIdAndGameIdOrderByScoreDesc(childId, gameId)
+                .map(GameScore::getAnswersLog)
+                .orElse(null);
+
         return GameDetailDto.builder()
                 .id(game.getId())
                 .name(game.getName())
@@ -95,6 +102,7 @@ public class GameService {
                 .baseStarsReward(game.getBaseStarsReward())
                 .timeLimit(game.getTimeLimit())
                 .questions(questionDtos)
+                .bestAnswersLog(bestAnswersLog)
                 .build();
     }
 
@@ -141,27 +149,33 @@ public class GameService {
         boolean isNewBest = previousBest.isEmpty() || req.getScore() > previousBest.get().getScore();
 
         // Save score in its own transaction — survives gamification failure
-        GameScore saved = saveGameScore(game, child, req, starsEarned);
+        GameScore saved = saveGameScore(game, child, req, starsEarned,
+                GameMode.valueOf(req.getGameMode() != null ? req.getGameMode() : "NORMAL"));
 
         // Apply gamification in outer transaction with rescue
         boolean gamificationApplied = true;
         boolean streakUpdated = false;
         List<AchievementDto> newAchievements = Collections.emptyList();
+        org.example.kidsmathapp.dto.inventory.InventoryItemDto droppedItem = null;
         try {
             GamificationOrchestrator.OrchestratorResult result = gamificationOrchestrator.orchestrate(
                     child.getId(), starsEarned,
-                    String.format("Completed game: %s (Score: %d%%)", game.getName(), req.getScore())
+                    String.format("Completed game: %s (Score: %d%%)", game.getName(), req.getScore()),
+                    ItemDropSource.GAME_COMPLETION
             );
             streakUpdated = result.streakUpdated();
             newAchievements = result.newAchievements();
+            if (!result.newItems().isEmpty()) {
+                droppedItem = result.newItems().get(0);
+            }
         } catch (Exception e) {
             gamificationApplied = false;
             log.error("Gamification failed for child {} game {} score {} — GameScore id={} still saved",
                     child.getId(), gameId, req.getScore(), saved.getId(), e);
         }
 
-        log.info("Game score recorded: child={} game={} score={} stars={} newBest={}",
-                child.getId(), gameId, req.getScore(), starsEarned, isNewBest);
+        log.info("Game score recorded: child={} game={} score={} stars={} newBest={} itemDrop={}",
+                child.getId(), gameId, req.getScore(), starsEarned, isNewBest, droppedItem != null ? droppedItem.getName() : "none");
 
         return GameScoreResultDto.builder()
                 .score(req.getScore())
@@ -171,6 +185,7 @@ public class GameService {
                 .streakUpdated(streakUpdated)
                 .newAchievements(newAchievements)
                 .gamificationApplied(gamificationApplied)
+                .newItem(droppedItem)
                 .build();
     }
 
@@ -178,7 +193,7 @@ public class GameService {
      * Saved in REQUIRES_NEW — always commits even if the outer transaction fails.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public GameScore saveGameScore(Game game, Child child, GameScoreRequest req, int starsEarned) {
+    public GameScore saveGameScore(Game game, Child child, GameScoreRequest req, int starsEarned, GameMode gameMode) {
         GameScore gs = GameScore.builder()
                 .game(game)
                 .child(child)
@@ -186,6 +201,7 @@ public class GameService {
                 .starsEarned(starsEarned)
                 .timeSpent(req.getTimeSpent())
                 .answersLog(req.getAnswersLog())
+                .gameMode(gameMode)
                 .playedAt(LocalDateTime.now())
                 .build();
         return gameScoreRepository.save(gs);

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.kidsmathapp.dto.inventory.InventoryItemDto;
 import org.example.kidsmathapp.dto.progress.AchievementDto;
 
 import java.util.List;
@@ -20,4 +21,5 @@ public class GameScoreResultDto {
     private boolean streakUpdated;
     private List<AchievementDto> newAchievements;
     private boolean gamificationApplied;  // false when orchestrator failed
+    private InventoryItemDto newItem;     // nullable — set when an item drops
 }

@@ -55,6 +55,13 @@ public class PointsService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public int getCurrentStars(Long childId) {
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> ApiException.notFound("Child not found: " + childId));
+        return child.getTotalStars();
+    }
+
     private PointsHistoryDto toPointsHistoryDto(PointsLog log) {
         return PointsHistoryDto.builder()
                 .id(log.getId())

@@ -20,4 +20,6 @@ public interface ChildRepository extends JpaRepository<Child, Long> {
     List<Child> findByGradeLevel(GradeLevel gradeLevel);
 
     List<Child> findByParentIdOrderByNameAsc(Long parentId);
+
+    List<Child> findByParentIdOrderByTotalStarsDescCurrentStreakDesc(Long parentId);
 }

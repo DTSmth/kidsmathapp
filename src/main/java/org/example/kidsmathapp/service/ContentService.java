@@ -10,6 +10,7 @@ import org.example.kidsmathapp.entity.Lesson;
 import org.example.kidsmathapp.entity.Progress;
 import org.example.kidsmathapp.entity.Question;
 import org.example.kidsmathapp.entity.Topic;
+import org.example.kidsmathapp.entity.enums.Difficulty;
 import org.example.kidsmathapp.exception.ApiException;
 import org.example.kidsmathapp.repository.*;
 import org.springframework.stereotype.Service;
@@ -115,11 +116,22 @@ public class ContentService {
 
     @Transactional(readOnly = true)
     public LessonDetailDto getLessonDetail(Long lessonId) {
+        return getLessonDetail(lessonId, null);
+    }
+
+    @Transactional(readOnly = true)
+    public LessonDetailDto getLessonDetail(Long lessonId, Long childId) {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> ApiException.notFound("Lesson not found"));
 
         Topic topic = lesson.getTopic();
         List<QuestionDto> questions = getQuestionsForLesson(lessonId);
+
+        // Adaptive difficulty: if child has scored ≥80% on recent lessons in this topic,
+        // prefer MEDIUM/HARD questions so strong learners get an appropriate challenge.
+        if (childId != null && questions.size() > 1) {
+            questions = applyAdaptiveDifficulty(questions, topic.getId(), childId);
+        }
 
         return LessonDetailDto.builder()
                 .id(lesson.getId())
@@ -133,6 +145,36 @@ public class ContentService {
                 .lessonMode(lesson.getLessonMode())
                 .questions(questions)
                 .build();
+    }
+
+    /**
+     * If a child has ≥3 completed lessons in this topic with an average score ≥80%,
+     * prefer MEDIUM/HARD questions to keep strong learners challenged.
+     * Falls back to all questions if there aren't enough harder ones.
+     */
+    private List<QuestionDto> applyAdaptiveDifficulty(List<QuestionDto> all, Long topicId, Long childId) {
+        List<Progress> topicProgress =
+                progressRepository.findByChildIdAndLessonTopicId(childId, topicId);
+
+        List<Progress> completed = topicProgress.stream()
+                .filter(p -> Boolean.TRUE.equals(p.getCompleted()) && p.getScore() != null)
+                .collect(Collectors.toList());
+
+        if (completed.size() < 3) return all;
+
+        double avgScore = completed.stream().mapToInt(Progress::getScore).average().orElse(0);
+        if (avgScore < 80) return all;
+
+        List<QuestionDto> harder = all.stream()
+                .filter(q -> q.getDifficulty() == Difficulty.MEDIUM
+                          || q.getDifficulty() == Difficulty.HARD)
+                .collect(Collectors.toList());
+
+        if (harder.size() < 2) return all; // not enough harder questions to matter
+
+        log.debug("Adaptive difficulty: child {} avg {}% on topic {} — serving {} harder lesson questions",
+                childId, (int) avgScore, topicId, harder.size());
+        return harder;
     }
 
     @Transactional(readOnly = true)

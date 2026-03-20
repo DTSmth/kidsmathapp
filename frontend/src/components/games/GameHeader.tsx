@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 
 interface GameHeaderProps {
   emoji: string;
-  timeRemaining: number;
+  timeRemaining?: number;
   lives: number;
   maxLives?: number;
   score: number;
-  totalQuestions: number;
+  totalQuestions?: number;
   onExit?: () => void;
 }
 
@@ -21,7 +21,7 @@ const GameHeader = ({
   onExit,
 }: GameHeaderProps) => {
   const navigate = useNavigate();
-  const isLow = timeRemaining <= 10;
+  const isLow = timeRemaining !== undefined && timeRemaining <= 10;
 
   const handleExit = () => {
     if (onExit) onExit();
@@ -40,22 +40,24 @@ const GameHeader = ({
 
       <span className="text-xl shrink-0">{emoji}</span>
 
-      {/* Timer */}
-      <div
-        className={`font-mono font-bold tabular-nums text-sm px-2 py-0.5 rounded-lg shrink-0 ${
-          isLow ? 'text-coral bg-coral/10 animate-pulse' : 'text-gray-700 bg-gray-100'
-        }`}
-        aria-live="polite"
-        aria-label={`${timeRemaining} seconds remaining`}
-      >
-        {timeRemaining}s
-      </div>
+      {/* Timer — hidden in Endless Rush mode */}
+      {timeRemaining !== undefined && (
+        <div
+          className={`font-mono font-bold tabular-nums text-sm px-2 py-0.5 rounded-lg shrink-0 ${
+            isLow ? 'text-coral bg-coral/10 animate-pulse' : 'text-gray-700 bg-gray-100'
+          }`}
+          aria-live="polite"
+          aria-label={`${timeRemaining} seconds remaining`}
+        >
+          {timeRemaining}s
+        </div>
+      )}
 
       <div className="flex-1" />
 
       {/* Score */}
       <span className="text-sm font-semibold text-gray-600 shrink-0">
-        {score}/{totalQuestions}
+        {totalQuestions !== undefined ? `${score}/${totalQuestions}` : `${score} ⚡`}
       </span>
 
       {/* Lives */}
