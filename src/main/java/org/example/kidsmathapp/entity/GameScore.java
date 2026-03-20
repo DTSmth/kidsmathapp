@@ -38,7 +38,7 @@ public class GameScore extends BaseEntity {
     private String answersLog;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "game_mode", nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'NORMAL'")
+    @Column(name = "game_mode", nullable = false)
     @Builder.Default
     private GameMode gameMode = GameMode.NORMAL;
 

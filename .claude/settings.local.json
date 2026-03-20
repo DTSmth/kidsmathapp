@@ -49,7 +49,19 @@
       "Bash(git commit:*)",
       "Bash(./mvnw clean:*)",
       "Read(//c/Program Files/**)",
-      "Bash(JAVA_HOME=\"/c/Users/duckt/.jdks/corretto-17.0.16\" ./mvnw clean package -q)"
+      "Bash(JAVA_HOME=\"/c/Users/duckt/.jdks/corretto-17.0.16\" ./mvnw clean package -q)",
+      "Read(//c/Users/duckt/workspace/gstack/**)",
+      "Bash(timeout 30 bun /c/temp/test-chrome.mjs)",
+      "Bash(jobs)",
+      "Bash(git add:*)",
+      "Bash(__NEW_LINE_313e342470123996__ git:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJxYXRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzQwNDY0MDcsImV4cCI6MTc3NDEzMjgwN30.SKDKFLuNkvdfIs4cbe2VFuZzf2RSFRHPgekwODZ-Kwzyx1--RNcPC5PQy-EZtfti\" CHILD_ID=3 __NEW_LINE_41e18fc739e9bcde__ echo \"=== 1. isToday serialization \\(streak calendar\\) ===\" curl -s \"http://localhost:8080/api/v1/streaks/$CHILD_ID/calendar\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJxYXRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzQwNDY0MDcsImV4cCI6MTc3NDEzMjgwN30.SKDKFLuNkvdfIs4cbe2VFuZzf2RSFRHPgekwODZ-Kwzyx1--RNcPC5PQy-EZtfti\" CHILD_ID=3 __NEW_LINE_180ca8c5355d3def__ echo \"=== Game score response \\(full\\) ===\" curl -s \"http://localhost:8080/api/v1/games/1/score\" -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $TOKEN\" -d \"{\"\"childId\"\":$CHILD_ID,\"\"score\"\":1000,\"\"timeSpent\"\":60,\"\"comboBonus\"\":0}\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJxYXRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzQwNDY0MDcsImV4cCI6MTc3NDEzMjgwN30.SKDKFLuNkvdfIs4cbe2VFuZzf2RSFRHPgekwODZ-Kwzyx1--RNcPC5PQy-EZtfti\" CHILD_ID=3 __NEW_LINE_9710729d8e93333e__ echo \"=== Game score response ===\" curl -s \"http://localhost:8080/api/v1/games/1/score\" -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $TOKEN\" -d \"{\"\"childId\"\":$CHILD_ID,\"\"score\"\":85,\"\"timeSpent\"\":60,\"\"comboBonus\"\":0}\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJxYXRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzQwNDY0MDcsImV4cCI6MTc3NDEzMjgwN30.SKDKFLuNkvdfIs4cbe2VFuZzf2RSFRHPgekwODZ-Kwzyx1--RNcPC5PQy-EZtfti\" CHILD_ID=3 __NEW_LINE_c1c40817d3e9574d__ echo \"=== Available lessons \\(dashboard topics\\) ===\" curl -s \"http://localhost:8080/api/v1/progress/$CHILD_ID/dashboard\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJxYXRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzQwNDY0MDcsImV4cCI6MTc3NDEzMjgwN30.SKDKFLuNkvdfIs4cbe2VFuZzf2RSFRHPgekwODZ-Kwzyx1--RNcPC5PQy-EZtfti\" CHILD_ID=3 __NEW_LINE_776962dc6b766070__ curl -s \"http://localhost:8080/api/v1/progress/dashboard/3\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(git:*)",
+      "Bash(grep -rn \"ddl-auto\\\\|hibernate\" /c/Users/duckt/workspace/kidsmathapp/src/main/resources/ --include=*.yml --include=*.properties)"
     ]
   }
 }

@@ -67,6 +67,17 @@ Add rate limiting to `POST /api/v1/questions/{id}/check` — 60 checks/minute pe
 
 ---
 
+### ~~Engagement Engine~~ ✅ DONE + QA'd (2026-03-20)
+~~Build inventory, leaderboard, streak calendar, daily bonus, rank levels, and item drops.~~
+
+Shipped in commit `3885cc6`. Inventory, leaderboard (family + per-game), streak calendar, daily bonus, rank levels (STARTER→LEGEND), and item drops are live. QA found and fixed 6 bugs in commit `da67172`:
+- Game leaderboard 500 (String→GameMode type mismatch)
+- `isCurrentChild`/`isNewPersonalBest`/`isToday` boolean serialization (Lombok `isXxx` + Jackson pattern)
+- `newItem` missing from lesson submission response
+- Double star awarding on first lesson completion
+
+---
+
 ### ~~Games Section~~ ✅ DONE (2026-03-19)
 ~~Build `GameController`, `GameService`, and the frontend games browser + game flow using the already-seeded `Game` and `GameScore` entities.~~
 
