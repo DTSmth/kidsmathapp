@@ -309,6 +309,49 @@ export interface GameLeaderboardDto {
   entries: LeaderboardEntryDto[];
 }
 
+// Parent Dashboard types
+export interface TopicAccuracyDto {
+  topicId: number;
+  topicName: string;
+  topicEmoji: string;
+  accuracy: number;
+  lessonsCompleted: number;
+  totalLessons: number;
+  needsPractice: boolean;
+}
+
+export interface HeatmapDayDto {
+  date: string;
+  practiced: boolean;
+  minutesPracticed: number;
+  isToday: boolean;
+}
+
+export interface TrajectoryPointDto {
+  weekLabel: string;
+  avgScore: number;
+}
+
+export interface ParentDashboardData {
+  childId: number;
+  childName: string;
+  gradeLevel: string;
+  daysActiveThisWeek: number;
+  totalMinutesThisWeek: number;
+  currentStreak: number;
+  topicAccuracies: TopicAccuracyDto[];
+  heatmap: HeatmapDayDto[];
+  trajectory: TrajectoryPointDto[];
+  isPremium: boolean;
+}
+
+export interface ChildSummaryDto {
+  id: number;
+  name: string;
+  avatarId: string;
+  totalStars: number;
+}
+
 // Dashboard DTO
 export interface DashboardDto {
   childId: number;
