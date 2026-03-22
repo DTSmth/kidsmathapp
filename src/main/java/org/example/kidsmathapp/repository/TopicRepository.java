@@ -15,4 +15,6 @@ public interface TopicRepository extends JpaRepository<Topic, Long> {
     List<Topic> findByGradeLevelOrderByOrderIndexAsc(GradeLevel gradeLevel);
 
     List<Topic> findAllByOrderByOrderIndexAsc();
+
+    boolean existsByGradeLevel(GradeLevel gradeLevel);
 }

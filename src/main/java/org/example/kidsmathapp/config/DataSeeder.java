@@ -40,6 +40,10 @@ public class DataSeeder implements CommandLineRunner {
     private final GameRepository gameRepository;
     private final AvatarItemRepository avatarItemRepository;
 
+    private boolean gradeSeeded(GradeLevel grade) {
+        return topicRepository.existsByGradeLevel(grade);
+    }
+
     @Override
     @Transactional
     public void run(String... args) {
@@ -50,7 +54,7 @@ public class DataSeeder implements CommandLineRunner {
             seedGames(topics);
             log.info("Data seeding completed successfully!");
         } else {
-            log.info("Database already contains data, skipping seeding.");
+            log.info("Database already contains data, skipping kindergarten seeding.");
             // Still seed games if they don't exist
             if (gameRepository.count() == 0) {
                 log.info("Seeding games...");
@@ -59,6 +63,24 @@ public class DataSeeder implements CommandLineRunner {
                 log.info("Game seeding completed!");
             }
         }
+
+        // Seed grades 1-3 if not already seeded (per-grade check)
+        if (!gradeSeeded(GradeLevel.GRADE_1)) {
+            log.info("Seeding Grade 1 content...");
+            seedGrade1();
+            log.info("Grade 1 seeding completed!");
+        }
+        if (!gradeSeeded(GradeLevel.GRADE_2)) {
+            log.info("Seeding Grade 2 content...");
+            seedGrade2();
+            log.info("Grade 2 seeding completed!");
+        }
+        if (!gradeSeeded(GradeLevel.GRADE_3)) {
+            log.info("Seeding Grade 3 content...");
+            seedGrade3();
+            log.info("Grade 3 seeding completed!");
+        }
+
         // Always run question text fixes (idempotent)
         fixNumberRecognitionQuestions();
         fixGameQuestions();
@@ -670,4 +692,250 @@ public class DataSeeder implements CommandLineRunner {
 
     private record AchievementData(String name, String description, String badge,
                                    String condition, int starsBonus) {}
+
+    private Topic createTopicForGrade(int orderIndex, String name, String description, String iconName, GradeLevel grade) {
+        Topic topic = Topic.builder()
+                .name(name)
+                .description(description)
+                .iconName(iconName)
+                .orderIndex(orderIndex)
+                .gradeLevel(grade)
+                .build();
+        return topicRepository.save(topic);
+    }
+
+    @Transactional
+    void seedGrade1() {
+        List<Lesson> lessons = new ArrayList<>();
+
+        // Topic 1: Place Value
+        Topic placeValue = createTopicForGrade(1, "Place Value", "Learn tens and ones", "place_value", GradeLevel.GRADE_1);
+        lessons.add(createLesson(placeValue, 1, "Tens and Ones", "Understand place value with tens and ones", 15,
+                buildLessonContent("Numbers have tens and ones places!", "The number 23 has 2 tens and 3 ones", 23)));
+        lessons.add(createLesson(placeValue, 2, "Building Numbers", "Build 2-digit numbers", 15,
+                buildLessonContent("Let's build numbers!", "3 tens + 5 ones = 35", 35)));
+        lessons.add(createLesson(placeValue, 3, "Comparing 2-Digit Numbers", "Which 2-digit number is bigger?", 20,
+                buildLessonContent("Compare tens first!", "45 > 38 because 4 tens > 3 tens", 0)));
+
+        // Topic 2: Addition to 20
+        Topic addition20 = createTopicForGrade(2, "Addition to 20", "Add numbers up to 20", "addition", GradeLevel.GRADE_1);
+        lessons.add(createLesson(addition20, 1, "Adding to 10", "Practice addition up to 10", 15,
+                buildLessonContent("Adding is putting together!", "7 + 3 = 10", 10)));
+        lessons.add(createLesson(addition20, 2, "Adding to 15", "Add numbers up to 15", 15,
+                buildLessonContent("Let's go higher!", "8 + 6 = 14", 14)));
+        lessons.add(createLesson(addition20, 3, "Adding to 20", "Add numbers up to 20", 20,
+                buildLessonContent("Almost there!", "9 + 8 = 17", 17)));
+
+        // Topic 3: Subtraction to 20
+        Topic subtraction20 = createTopicForGrade(3, "Subtraction to 20", "Subtract numbers up to 20", "subtraction", GradeLevel.GRADE_1);
+        lessons.add(createLesson(subtraction20, 1, "Subtracting from 10", "Take away from 10", 15,
+                buildLessonContent("Taking away is subtraction!", "10 - 4 = 6", 6)));
+        lessons.add(createLesson(subtraction20, 2, "Subtracting from 15", "Subtract from 15", 15,
+                buildLessonContent("Let's practice!", "15 - 7 = 8", 8)));
+        lessons.add(createLesson(subtraction20, 3, "Subtracting from 20", "Subtract from 20", 20,
+                buildLessonContent("You can do it!", "20 - 9 = 11", 11)));
+
+        // Topic 4: Telling Time
+        Topic time = createTopicForGrade(4, "Telling Time", "Read clocks at the hour and half-hour", "time", GradeLevel.GRADE_1);
+        lessons.add(createLesson(time, 1, "Time to the Hour", "Read the hour hand", 15,
+                buildLessonContent("The short hand shows the hour!", "When the short hand points to 3, it is 3 o'clock", 0)));
+        lessons.add(createLesson(time, 2, "Half Past the Hour", "Read half past times", 15,
+                buildLessonContent("Half past means 30 minutes!", "Half past 4 = 4:30", 0)));
+        lessons.add(createLesson(time, 3, "Time Matching", "Match times to clocks", 20,
+                buildLessonContent("Let's practice reading time!", "Is the clock showing 2:00 or 2:30?", 0)));
+
+        // Topic 5: Measurement
+        Topic measurement = createTopicForGrade(5, "Measurement", "Compare lengths and heights", "measurement", GradeLevel.GRADE_1);
+        lessons.add(createLesson(measurement, 1, "Longer or Shorter", "Compare object lengths", 15,
+                buildLessonContent("We can measure with our eyes!", "A pencil is longer than an eraser", 0)));
+        lessons.add(createLesson(measurement, 2, "Taller or Shorter", "Compare heights", 15,
+                buildLessonContent("Compare heights!", "A giraffe is taller than a dog", 0)));
+        lessons.add(createLesson(measurement, 3, "Measuring with Units", "Use non-standard units to measure", 20,
+                buildLessonContent("Use paper clips to measure!", "This book is 5 paper clips long", 0)));
+
+        // Topic 6: Basic Fractions
+        Topic fractions = createTopicForGrade(6, "Basic Fractions", "Learn halves and quarters", "fractions", GradeLevel.GRADE_1);
+        lessons.add(createLesson(fractions, 1, "Halves", "Splitting into 2 equal parts", 15,
+                buildLessonContent("Half means 2 equal parts!", "Cut a pizza in half: 🍕🍕", 0)));
+        lessons.add(createLesson(fractions, 2, "Quarters", "Splitting into 4 equal parts", 15,
+                buildLessonContent("A quarter is 1 of 4 equal parts!", "Fold paper into 4: each part is 1/4", 0)));
+        lessons.add(createLesson(fractions, 3, "Halves and Quarters", "Compare halves and quarters", 20,
+                buildLessonContent("2 halves = 1 whole!", "Which is bigger, 1/2 or 1/4?", 0)));
+
+        seedGradeQuestions(lessons, GradeLevel.GRADE_1);
+        log.info("Seeded Grade 1: 6 topics, 18 lessons");
+    }
+
+    @Transactional
+    void seedGrade2() {
+        List<Lesson> lessons = new ArrayList<>();
+
+        // Topic 1: 3-Digit Numbers
+        Topic threeDigit = createTopicForGrade(1, "3-Digit Numbers", "Understand hundreds, tens, and ones", "numbers", GradeLevel.GRADE_2);
+        lessons.add(createLesson(threeDigit, 1, "Hundreds Place", "Learn the hundreds place", 15,
+                buildLessonContent("Hundreds are groups of 100!", "342 has 3 hundreds, 4 tens, 2 ones", 342)));
+        lessons.add(createLesson(threeDigit, 2, "Building 3-Digit Numbers", "Build and read 3-digit numbers", 15,
+                buildLessonContent("Let's build big numbers!", "5 hundreds + 6 tens + 7 ones = 567", 567)));
+        lessons.add(createLesson(threeDigit, 3, "Ordering 3-Digit Numbers", "Order 3-digit numbers from least to greatest", 20,
+                buildLessonContent("Compare hundreds first!", "213 < 231 < 312", 0)));
+
+        // Topic 2: Addition with Regrouping
+        Topic addReg = createTopicForGrade(2, "Addition with Regrouping", "Add with carrying", "addition", GradeLevel.GRADE_2);
+        lessons.add(createLesson(addReg, 1, "When to Regroup", "Learn when to carry a 1", 15,
+                buildLessonContent("Regroup when ones > 9!", "17 + 8 = 25 (1 ten + 5 ones)", 25)));
+        lessons.add(createLesson(addReg, 2, "Adding 2-Digit Numbers", "Add two 2-digit numbers with regrouping", 15,
+                buildLessonContent("Carry the ten!", "48 + 36 = 84", 84)));
+        lessons.add(createLesson(addReg, 3, "Adding 3-Digit Numbers", "Add 3-digit numbers", 20,
+                buildLessonContent("Big addition!", "247 + 385 = 632", 632)));
+
+        // Topic 3: Subtraction with Regrouping
+        Topic subReg = createTopicForGrade(3, "Subtraction with Regrouping", "Subtract with borrowing", "subtraction", GradeLevel.GRADE_2);
+        lessons.add(createLesson(subReg, 1, "Borrowing Basics", "Learn when to borrow", 15,
+                buildLessonContent("Borrow when you need more ones!", "52 - 8 = 44", 44)));
+        lessons.add(createLesson(subReg, 2, "2-Digit Subtraction", "Subtract 2-digit numbers", 15,
+                buildLessonContent("Let's borrow from tens!", "75 - 38 = 37", 37)));
+        lessons.add(createLesson(subReg, 3, "3-Digit Subtraction", "Subtract 3-digit numbers", 20,
+                buildLessonContent("Big subtraction!", "523 - 267 = 256", 256)));
+
+        // Topic 4: Multiplication Intro
+        Topic multIntro = createTopicForGrade(4, "Multiplication Intro", "Multiply by 2s, 5s, and 10s", "multiplication", GradeLevel.GRADE_2);
+        lessons.add(createLesson(multIntro, 1, "Multiply by 2", "Learn the 2 times table", 15,
+                buildLessonContent("Multiplying by 2 means doubles!", "2 × 4 = 8 (4 + 4)", 8)));
+        lessons.add(createLesson(multIntro, 2, "Multiply by 5", "Learn the 5 times table", 15,
+                buildLessonContent("5s always end in 0 or 5!", "5 × 3 = 15", 15)));
+        lessons.add(createLesson(multIntro, 3, "Multiply by 10", "Learn the 10 times table", 20,
+                buildLessonContent("10s just add a zero!", "10 × 7 = 70", 70)));
+
+        // Topic 5: Geometry
+        Topic geometry = createTopicForGrade(5, "Geometry", "Learn 2D shapes and their properties", "shapes", GradeLevel.GRADE_2);
+        lessons.add(createLesson(geometry, 1, "Polygons", "Learn about polygons", 15,
+                buildLessonContent("A polygon has straight sides!", "Triangle: 3 sides, Square: 4 sides, Pentagon: 5 sides", 0)));
+        lessons.add(createLesson(geometry, 2, "Vertices and Edges", "Count corners and sides", 15,
+                buildLessonContent("Vertices are corners!", "A rectangle has 4 vertices and 4 edges", 0)));
+        lessons.add(createLesson(geometry, 3, "Symmetry", "Find lines of symmetry", 20,
+                buildLessonContent("Symmetry means equal halves!", "A butterfly has symmetry - both sides match", 0)));
+
+        // Topic 6: Money
+        Topic money = createTopicForGrade(6, "Money", "Learn coins and dollars", "money", GradeLevel.GRADE_2);
+        lessons.add(createLesson(money, 1, "Coins", "Learn penny, nickel, dime, quarter", 15,
+                buildLessonContent("Coins have values!", "Penny=1¢, Nickel=5¢, Dime=10¢, Quarter=25¢", 0)));
+        lessons.add(createLesson(money, 2, "Counting Coins", "Count sets of coins", 15,
+                buildLessonContent("Add the coins together!", "1 quarter + 2 dimes = 45¢", 45)));
+        lessons.add(createLesson(money, 3, "Making Change", "Calculate change", 20,
+                buildLessonContent("Change is what you get back!", "Pay $1 for 65¢ item = 35¢ change", 35)));
+
+        seedGradeQuestions(lessons, GradeLevel.GRADE_2);
+        log.info("Seeded Grade 2: 6 topics, 18 lessons");
+    }
+
+    @Transactional
+    void seedGrade3() {
+        List<Lesson> lessons = new ArrayList<>();
+
+        // Topic 1: Multiplication
+        Topic multiplication = createTopicForGrade(1, "Multiplication", "Master times tables up to 10×10", "multiplication", GradeLevel.GRADE_3);
+        lessons.add(createLesson(multiplication, 1, "Times Tables 1-5", "Learn multiplication facts 1-5", 20,
+                buildLessonContent("Multiplication is repeated addition!", "3 × 4 = 4 + 4 + 4 = 12", 12)));
+        lessons.add(createLesson(multiplication, 2, "Times Tables 6-10", "Learn multiplication facts 6-10", 20,
+                buildLessonContent("Keep practicing!", "7 × 8 = 56", 56)));
+        lessons.add(createLesson(multiplication, 3, "Mixed Multiplication", "Practice all times tables", 25,
+                buildLessonContent("You're a multiplication master!", "9 × 9 = 81", 81)));
+
+        // Topic 2: Division Intro
+        Topic division = createTopicForGrade(2, "Division Intro", "Learn to divide equally", "division", GradeLevel.GRADE_3);
+        lessons.add(createLesson(division, 1, "Sharing Equally", "Share objects into equal groups", 20,
+                buildLessonContent("Division is fair sharing!", "12 ÷ 3 = 4 (12 cookies shared by 3 friends)", 4)));
+        lessons.add(createLesson(division, 2, "Division Facts", "Practice basic division", 20,
+                buildLessonContent("Division undoes multiplication!", "20 ÷ 4 = 5 because 4 × 5 = 20", 5)));
+        lessons.add(createLesson(division, 3, "Word Problems with Division", "Solve division word problems", 25,
+                buildLessonContent("Think about equal groups!", "24 balloons for 6 kids = 24 ÷ 6 = 4 each", 4)));
+
+        // Topic 3: Fractions
+        Topic fractions3 = createTopicForGrade(3, "Fractions", "Understand 1/2, 1/3, and 1/4", "fractions", GradeLevel.GRADE_3);
+        lessons.add(createLesson(fractions3, 1, "Naming Fractions", "Name fractions with numerator/denominator", 20,
+                buildLessonContent("Top number = parts we have!", "3/4 means 3 out of 4 equal parts", 0)));
+        lessons.add(createLesson(fractions3, 2, "Comparing Fractions", "Which fraction is larger?", 20,
+                buildLessonContent("Same denominator: bigger numerator = more!", "3/4 > 1/4", 0)));
+        lessons.add(createLesson(fractions3, 3, "Fractions on a Number Line", "Place fractions on a number line", 25,
+                buildLessonContent("Fractions fit between 0 and 1!", "1/2 is right in the middle of 0 and 1", 0)));
+
+        // Topic 4: Time in Minutes
+        Topic timeMin = createTopicForGrade(4, "Time to the Minute", "Read clocks to the nearest minute", "time", GradeLevel.GRADE_3);
+        lessons.add(createLesson(timeMin, 1, "Minutes Past the Hour", "Read minutes after the hour", 20,
+                buildLessonContent("Each small mark = 1 minute!", "3:15 means 15 minutes past 3", 0)));
+        lessons.add(createLesson(timeMin, 2, "Minutes to the Hour", "Read minutes before the hour", 20,
+                buildLessonContent("Count minutes to next hour!", "3:45 = 15 minutes to 4", 0)));
+        lessons.add(createLesson(timeMin, 3, "Elapsed Time", "Calculate time that has passed", 25,
+                buildLessonContent("Subtract start from end time!", "2:00 PM to 3:30 PM = 1 hour 30 minutes", 0)));
+
+        // Topic 5: Perimeter and Area
+        Topic perimeterArea = createTopicForGrade(5, "Perimeter and Area", "Measure around and inside shapes", "measurement", GradeLevel.GRADE_3);
+        lessons.add(createLesson(perimeterArea, 1, "Perimeter", "Add all sides to find perimeter", 20,
+                buildLessonContent("Perimeter = add all sides!", "Square with side 4: P = 4+4+4+4 = 16", 16)));
+        lessons.add(createLesson(perimeterArea, 2, "Area with Square Units", "Count squares to find area", 20,
+                buildLessonContent("Area = length × width!", "Rectangle 5×3: Area = 15 square units", 15)));
+        lessons.add(createLesson(perimeterArea, 3, "Perimeter vs Area", "Know the difference", 25,
+                buildLessonContent("Perimeter = around, Area = inside!", "A room 4m×3m: P=14m, A=12 sq m", 0)));
+
+        // Topic 6: Word Problems
+        Topic wordProblems = createTopicForGrade(6, "Multi-Step Word Problems", "Solve problems with multiple steps", "problems", GradeLevel.GRADE_3);
+        lessons.add(createLesson(wordProblems, 1, "Two-Step Problems", "Solve problems needing 2 operations", 20,
+                buildLessonContent("Read carefully, solve step by step!", "Mike has 12 apples, eats 3, shares rest among 3 friends: (12-3)÷3=3", 3)));
+        lessons.add(createLesson(wordProblems, 2, "Problems with Multiplication", "Word problems using multiplication", 20,
+                buildLessonContent("Find the total using multiplication!", "5 bags with 8 apples each: 5×8=40", 40)));
+        lessons.add(createLesson(wordProblems, 3, "Mixed Operations", "Combine +, -, ×, ÷ in one problem", 25,
+                buildLessonContent("Think about what each step needs!", "Buy 3 items at $4 each, pay $20: change = 20 - (3×4) = $8", 8)));
+
+        seedGradeQuestions(lessons, GradeLevel.GRADE_3);
+        log.info("Seeded Grade 3: 6 topics, 18 lessons");
+    }
+
+    private void seedGradeQuestions(List<Lesson> lessons, GradeLevel grade) {
+        List<Question> questions = new ArrayList<>();
+
+        for (Lesson lesson : lessons) {
+            // Generate 4 grade-appropriate multiple choice questions per lesson
+            String title = lesson.getTitle();
+            GradeLevel g = grade;
+
+            if (g == GradeLevel.GRADE_1) {
+                questions.addAll(generateGrade1Questions(lesson, title));
+            } else if (g == GradeLevel.GRADE_2) {
+                questions.addAll(generateGrade2Questions(lesson, title));
+            } else if (g == GradeLevel.GRADE_3) {
+                questions.addAll(generateGrade3Questions(lesson, title));
+            }
+        }
+
+        questionRepository.saveAll(questions);
+        log.info("Seeded {} questions for {} lessons in {}", questions.size(), lessons.size(), grade);
+    }
+
+    private List<Question> generateGrade1Questions(Lesson lesson, String title) {
+        List<Question> qs = new ArrayList<>();
+        // Addition questions
+        qs.add(createMultipleChoiceQuestion("What is 8 + 7? 🍎", "[\"13\",\"14\",\"15\",\"16\"]", "15", Difficulty.EASY, lesson));
+        qs.add(createMultipleChoiceQuestion("Leo has 9 🌟 and earns 6 more. How many total?", "[\"14\",\"15\",\"16\",\"17\"]", "15", Difficulty.EASY, lesson));
+        qs.add(createMultipleChoiceQuestion("What is 12 + 5? 🎯", "[\"16\",\"17\",\"18\",\"19\"]", "17", Difficulty.MEDIUM, lesson));
+        qs.add(createMultipleChoiceQuestion("What is 15 - 8? 🐰", "[\"6\",\"7\",\"8\",\"9\"]", "7", Difficulty.MEDIUM, lesson));
+        return qs;
+    }
+
+    private List<Question> generateGrade2Questions(Lesson lesson, String title) {
+        List<Question> qs = new ArrayList<>();
+        qs.add(createMultipleChoiceQuestion("What is 47 + 36? 🚀", "[\"81\",\"82\",\"83\",\"84\"]", "83", Difficulty.MEDIUM, lesson));
+        qs.add(createMultipleChoiceQuestion("What is 5 × 6? ⭐", "[\"28\",\"30\",\"32\",\"34\"]", "30", Difficulty.MEDIUM, lesson));
+        qs.add(createMultipleChoiceQuestion("What is 82 - 45? 🎯", "[\"35\",\"36\",\"37\",\"38\"]", "37", Difficulty.MEDIUM, lesson));
+        qs.add(createMultipleChoiceQuestion("How many cents in 3 dimes and 2 nickels? 💰", "[\"38\",\"39\",\"40\",\"41\"]", "40", Difficulty.HARD, lesson));
+        return qs;
+    }
+
+    private List<Question> generateGrade3Questions(Lesson lesson, String title) {
+        List<Question> qs = new ArrayList<>();
+        qs.add(createMultipleChoiceQuestion("What is 7 × 8? ⭐", "[\"54\",\"56\",\"58\",\"60\"]", "56", Difficulty.MEDIUM, lesson));
+        qs.add(createMultipleChoiceQuestion("What is 63 ÷ 7? 🎯", "[\"7\",\"8\",\"9\",\"10\"]", "9", Difficulty.MEDIUM, lesson));
+        qs.add(createMultipleChoiceQuestion("A rectangle has length 6 and width 4. What is the area? 📐", "[\"20\",\"22\",\"24\",\"26\"]", "24", Difficulty.HARD, lesson));
+        qs.add(createMultipleChoiceQuestion("Which fraction is bigger: 3/4 or 1/4? 🍕", "[\"3/4\",\"1/4\",\"They are equal\",\"Cannot tell\"]", "3/4", Difficulty.MEDIUM, lesson));
+        return qs;
+    }
 }
