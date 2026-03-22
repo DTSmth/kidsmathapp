@@ -2,6 +2,17 @@
 
 ## P3 — Design Debt
 
+### AnimalMascot Mood Variants
+Add a `mood` prop to `AnimalMascot` component: `neutral | happy | excited | wistful`. Each mood uses CSS transforms only — no new assets. `excited`: slight forward lean + scale(1.05). `wistful`: slight droop + opacity 90%.
+
+**Why:** PaywallGate uses the mascot with a 😕 emoji overlay as a workaround — functional but not polished. PracticeSelect uses ⚡ overlay. A `mood` prop would make these screens feel intentional.
+**Effort:** S (human: ~1h / CC: ~10 min)
+**Priority:** P3
+**Workaround in use:** Emoji overlay (`😕`, `⚡`) positioned absolutely over neutral mascot.
+**Where to start:** `frontend/src/components/characters/AnimalMascot.tsx` — add `mood` prop with CSS class map.
+
+---
+
 ### DESIGN.md Maintenance
 Keep `frontend/DESIGN.md` up to date when new components are added or design decisions change.
 
