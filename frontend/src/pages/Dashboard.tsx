@@ -188,6 +188,18 @@ const Dashboard = () => {
           <Gamepad2 className="w-6 h-6" />
         </button>
 
+        {/* Practice CTA */}
+        <button
+          onClick={() => navigate('/practice')}
+          className="w-full bg-accent text-gray-800 rounded-2xl px-5 py-4 flex items-center justify-between shadow-md hover:bg-accent/80 transition-colors"
+        >
+          <div className="text-left">
+            <p className="font-bold text-lg">Practice Mode</p>
+            <p className="text-gray-600 text-sm opacity-90">Quick generated exercises</p>
+          </div>
+          <span className="text-2xl">🎯</span>
+        </button>
+
         {/* Games preview */}
         {games.length > 0 && (
           <div>

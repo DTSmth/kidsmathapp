@@ -6,3 +6,7 @@ export const getLessonDetail = (lessonId: number): Promise<LessonDetailDto> =>
 
 export const submitLesson = (lessonId: number, request: LessonSubmissionRequest): Promise<LessonSubmissionResult> =>
   apiClient.post<{ data: LessonSubmissionResult }>(`/lessons/${lessonId}/submit`, request).then(r => r.data.data);
+
+export const startLesson = (lessonId: number, childId: number): Promise<{ lessonId: number; startedAt: string }> =>
+  apiClient.post<{ data: { lessonId: number; startedAt: string } }>(`/lessons/${lessonId}/start?childId=${childId}`)
+    .then(r => r.data.data);

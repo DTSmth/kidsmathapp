@@ -18,6 +18,9 @@ import GameComplete from './pages/GameComplete';
 import CollectorAlbum from './pages/CollectorAlbum';
 import AvatarCustomizer from './pages/AvatarCustomizer';
 import GraduationScreen from './pages/GraduationScreen';
+import PracticeSelect from './pages/PracticeSelect';
+import PracticeQuiz from './pages/PracticeQuiz';
+import PracticeComplete from './pages/PracticeComplete';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -198,6 +201,36 @@ function App() {
             <ProtectedRoute>
               <ChildProtectedRoute>
                 <GraduationScreen />
+              </ChildProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/practice"
+          element={
+            <ProtectedRoute>
+              <ChildProtectedRoute>
+                <PracticeSelect />
+              </ChildProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/practice/quiz"
+          element={
+            <ProtectedRoute>
+              <ChildProtectedRoute>
+                <PracticeQuiz />
+              </ChildProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/practice/complete"
+          element={
+            <ProtectedRoute>
+              <ChildProtectedRoute>
+                <PracticeComplete />
               </ChildProtectedRoute>
             </ProtectedRoute>
           }
