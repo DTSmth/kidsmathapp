@@ -1,0 +1,17 @@
+package org.example.kidsmathapp.dto.content;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class PracticeGenerateRequest {
+    private Long childId;
+    private String topicType;
+    @Builder.Default
+    private int count = 10;
+}
