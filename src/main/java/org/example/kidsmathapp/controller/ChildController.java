@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/children")
@@ -69,5 +70,14 @@ public class ChildController {
         Long parentId = controllerHelper.getParentId(userDetails);
         childService.deleteChild(id, parentId);
         return ResponseEntity.ok(ApiResponse.success("Child profile deleted successfully"));
+    }
+
+    @PostMapping("/{id}/advance-grade")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> advanceGrade(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        Long parentId = controllerHelper.getParentId(userDetails);
+        Map<String, Object> result = childService.advanceGrade(id, parentId);
+        return ResponseEntity.ok(ApiResponse.success(result, (String) result.get("message")));
     }
 }

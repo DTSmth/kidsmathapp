@@ -17,6 +17,7 @@ import GamePlay from './pages/GamePlay';
 import GameComplete from './pages/GameComplete';
 import CollectorAlbum from './pages/CollectorAlbum';
 import AvatarCustomizer from './pages/AvatarCustomizer';
+import GraduationScreen from './pages/GraduationScreen';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -188,6 +189,16 @@ function App() {
           element={
             <ProtectedRoute>
               <ParentDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/graduation"
+          element={
+            <ProtectedRoute>
+              <ChildProtectedRoute>
+                <GraduationScreen />
+              </ChildProtectedRoute>
             </ProtectedRoute>
           }
         />
