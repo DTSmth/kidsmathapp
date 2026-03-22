@@ -27,6 +27,12 @@ public class Progress extends BaseEntity {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
+    @Column(name = "lesson_started_at")
+    private LocalDateTime lessonStartedAt;
+
+    @Column(name = "time_spent_seconds")
+    private Integer timeSpentSeconds;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id", nullable = false)
     private Child child;

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,4 +44,11 @@ public interface ProgressRepository extends JpaRepository<Progress, Long> {
            "WHERE p.child.id = :childId AND p.completed = true " +
            "GROUP BY p.lesson.topic.id")
     List<Object[]> countCompletedGroupByTopicId(@Param("childId") Long childId);
+
+    long countByChildIdAndCompletedTrueAndCompletedAtAfter(Long childId, LocalDateTime after);
+
+    List<Progress> findByChildIdAndCompletedAtAfter(Long childId, LocalDateTime after);
+
+    @Query("SELECT p FROM Progress p WHERE p.child.id = :childId AND p.lesson.topic.gradeLevel = :grade AND p.completed = true")
+    List<Progress> findCompletedByChildIdAndGrade(@Param("childId") Long childId, @Param("grade") org.example.kidsmathapp.entity.enums.GradeLevel grade);
 }

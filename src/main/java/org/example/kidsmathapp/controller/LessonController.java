@@ -6,12 +6,16 @@ import org.example.kidsmathapp.dto.ApiResponse;
 import org.example.kidsmathapp.dto.content.LessonDetailDto;
 import org.example.kidsmathapp.dto.content.LessonSubmissionResult;
 import org.example.kidsmathapp.dto.content.LessonSubmissionRequest;
+import org.example.kidsmathapp.entity.Progress;
 import org.example.kidsmathapp.service.ContentService;
+import org.example.kidsmathapp.service.ProgressService;
 import org.example.kidsmathapp.service.QuestionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/lessons")
@@ -20,7 +24,22 @@ public class LessonController {
 
     private final ContentService contentService;
     private final QuestionService questionService;
+    private final ProgressService progressService;
     private final ControllerHelper controllerHelper;
+
+    @PostMapping("/{id}/start")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> startLesson(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id,
+            @RequestParam Long childId) {
+        controllerHelper.validateChildOwnership(userDetails, childId);
+        Progress progress = progressService.startLesson(childId, id);
+        Map<String, Object> result = Map.of(
+                "lessonId", id,
+                "startedAt", progress.getLessonStartedAt().toString()
+        );
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<LessonDetailDto>> getLessonDetail(

@@ -25,4 +25,5 @@ public class LessonCompletionResult {
     private boolean streakUpdated;
     private int currentStreak;
     private InventoryItemDto newItem; // nullable — set when an item drops
+    private Integer timeSpentSeconds; // nullable — set when lesson start was recorded
 }

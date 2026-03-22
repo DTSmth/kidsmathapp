@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,32 @@ public class ProgressService {
         return count;
     }
 
+    /**
+     * Records the start of a lesson. Creates a Progress record if not exists,
+     * sets lessonStartedAt if not already set (so re-attempts don't reset timer).
+     */
+    @Transactional
+    public Progress startLesson(Long childId, Long lessonId) {
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> ApiException.notFound("Child not found with id: " + childId));
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> ApiException.notFound("Lesson not found with id: " + lessonId));
+
+        Progress progress = progressRepository.findByChildIdAndLessonId(childId, lessonId)
+                .orElse(Progress.builder()
+                        .child(child)
+                        .lesson(lesson)
+                        .completed(false)
+                        .build());
+
+        // Only set start time if not already set (don't overwrite on re-attempt)
+        if (progress.getLessonStartedAt() == null) {
+            progress.setLessonStartedAt(LocalDateTime.now());
+        }
+
+        return progressRepository.save(progress);
+    }
+
     @Transactional
     public Progress recordProgress(Long childId, Long lessonId, int score, boolean completed) {
         Child child = childRepository.findById(childId)
@@ -113,7 +140,19 @@ public class ProgressService {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> ApiException.notFound("Lesson not found with id: " + lessonId));
 
-        createOrUpdateProgressRecord(child, lesson, score, true);
+        Progress savedProgress = createOrUpdateProgressRecord(child, lesson, score, true);
+
+        // Compute time spent if lesson was started via the start endpoint
+        Integer timeSpentSeconds = null;
+        if (savedProgress.getLessonStartedAt() != null && savedProgress.getTimeSpentSeconds() == null) {
+            long seconds = ChronoUnit.SECONDS.between(savedProgress.getLessonStartedAt(), LocalDateTime.now());
+            // cap at 15 minutes (900 seconds) — 3x estimated 5 min lesson time
+            timeSpentSeconds = (int) Math.min(seconds, 900);
+            savedProgress.setTimeSpentSeconds(timeSpentSeconds);
+            progressRepository.save(savedProgress);
+        } else if (savedProgress.getTimeSpentSeconds() != null) {
+            timeSpentSeconds = savedProgress.getTimeSpentSeconds();
+        }
 
         int baseStars = lesson.getStarsReward();
         int bonusStars = score >= HIGH_SCORE_THRESHOLD
@@ -138,6 +177,7 @@ public class ProgressService {
                 .streakUpdated(gamification.streakUpdated())
                 .currentStreak(child.getCurrentStreak())
                 .newItem(droppedItem)
+                .timeSpentSeconds(timeSpentSeconds)
                 .build();
     }
 
