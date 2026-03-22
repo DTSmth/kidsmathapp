@@ -8,6 +8,7 @@ import org.example.kidsmathapp.dto.content.LessonSubmissionResult;
 import org.example.kidsmathapp.dto.content.LessonSubmissionRequest;
 import org.example.kidsmathapp.entity.Progress;
 import org.example.kidsmathapp.service.ContentService;
+import org.example.kidsmathapp.service.PaywallEnforcer;
 import org.example.kidsmathapp.service.ProgressService;
 import org.example.kidsmathapp.service.QuestionService;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class LessonController {
     private final QuestionService questionService;
     private final ProgressService progressService;
     private final ControllerHelper controllerHelper;
+    private final PaywallEnforcer paywallEnforcer;
 
     @PostMapping("/{id}/start")
     public ResponseEntity<ApiResponse<Map<String, Object>>> startLesson(
@@ -33,6 +35,13 @@ public class LessonController {
             @PathVariable Long id,
             @RequestParam Long childId) {
         controllerHelper.validateChildOwnership(userDetails, childId);
+
+        Long parentId = controllerHelper.getParentId(userDetails);
+        if (!paywallEnforcer.canStartLesson(parentId, childId)) {
+            throw org.example.kidsmathapp.exception.ApiException.forbidden(
+                    "Daily lesson limit reached. Upgrade to Premium for unlimited lessons.");
+        }
+
         Progress progress = progressService.startLesson(childId, id);
         Map<String, Object> result = Map.of(
                 "lessonId", id,
